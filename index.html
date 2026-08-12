@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal EducaTEA | Inclusão Digital</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+<header class="gov-header">
+    <div class="header-container">
+        <button class="menu-toggle" id="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menu de áreas de estudo" aria-expanded="false">
+            <span class="menu-toggle-bar"></span>
+            <span class="menu-toggle-bar"></span>
+            <span class="menu-toggle-bar"></span>
+        </button>
+        <div class="logo-area">
+            <div class="logo-wrapper">
+                <span class="logo-icon">🎓</span>
+                <span class="logo-main">Educa<span class="logo-highlight">TEA</span></span>
+            </div>
+            <span class="logo-subtitle">Inclusão Digital | Acolhimento & Aprendizado</span>
+        </div>
+        <nav class="top-nav">
+            <div class="status-container">
+                <span class="status-badge">✨ Portal de Acessibilidade ✨</span>
+                <span class="status-icon">🌈</span>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<!-- PAINEL DE PERSONALIZAÇÃO -->
+<div id="personalizacao-panel" class="personalizacao-panel">
+    <button class="btn-personalizar" onclick="togglePersonalizacao()" title="Personalizar Estilo">
+        🎨
+    </button>
+    <div id="personalizacao-menu" class="personalizacao-menu">
+        <h3>🎨 Personalizar Estilo</h3>
+        
+        <div class="opcao-personalizacao">
+            <label>🎭 Tema</label>
+            <div class="temas-grid">
+                <button class="btn-tema" data-tema="light" onclick="applyTheme('light')">☀️ Claro</button>
+                <button class="btn-tema" data-tema="dark" onclick="applyTheme('dark')">🌙 Escuro</button>
+                <button class="btn-tema" data-tema="pastel" onclick="applyTheme('pastel')">🎨 Pastel</button>
+                <button class="btn-tema" data-tema="high-contrast" onclick="applyTheme('high-contrast')">⚡ Alto Contraste</button>
+                <button class="btn-tema" data-tema="blue" onclick="applyTheme('blue')">💙 Azul Calmante</button>
+            </div>
+        </div>
+        
+        <div class="opcao-personalizacao">
+            <label>🔤 Tamanho da Fonte</label>
+            <div class="fonte-tamanho">
+                <button class="btn-fonte" data-tamanho="pequena" onclick="applyFontSize('pequena')">P</button>
+                <button class="btn-fonte" data-tamanho="media" onclick="applyFontSize('media')">M</button>
+                <button class="btn-fonte" data-tamanho="grande" onclick="applyFontSize('grande')">G</button>
+            </div>
+        </div>
+        
+        <div class="opcao-personalizacao">
+            <label>📏 Espaçamento</label>
+            <div class="espacamento-opcoes">
+                <button class="btn-espacamento" data-espacamento="normal" onclick="applySpacing('normal')">Normal</button>
+                <button class="btn-espacamento" data-espacamento="comfortable" onclick="applySpacing('comfortable')">Confortável</button>
+            </div>
+        </div>
+        
+        <div class="opcao-personalizacao">
+            <label>🔄 Redefinir Padrão</label>
+            <button class="btn-acessibilidade" onclick="resetPreferences()" style="width: 100%;">
+                Restaurar Configurações
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Barra de Acessibilidade -->
+<div class="acessibilidade-bar">
+    <button id="btn-silenciar" class="btn-acessibilidade" onclick="toggleSom()">
+        🔊 Sons Ativados
+    </button>
+    <button id="btn-contraste" class="btn-acessibilidade" onclick="toggleContraste()">
+        🌙 Modo Conforto
+    </button>
+    <button id="btn-reiniciar" class="btn-acessibilidade" onclick="reiniciarJogoAtual()">
+        🔄 Reiniciar Jogo
+    </button>
+</div>
+
+<div class="wrapper">
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <ul class="nav-list">
+            <li class="nav-item active" onclick="navigateHome()">
+                <i class="icon">🏠</i> Início
+            </li>
+            <li class="nav-label">Áreas de Estudo</li>
+            
+            <li class="nav-item" onclick="toggleSubMenu('palavras', this)">
+                <i class="icon">✍️</i> Palavras <span class="seta">▼</span>
+            </li>
+            <ul class="sub-menu" id="sub-palavras">
+                <li class="sub-item" onclick="carregarJogo('Monte a Palavra')">📝 Monte a Palavra</li>
+                <li class="sub-item" onclick="carregarJogo('Caça-Palavras')">🔍 Caça-Palavras</li>
+                <li class="sub-item" onclick="carregarJogo('Sílabas Mágicas')">🔤 Sílabas Mágicas</li>
+                <li class="sub-item" onclick="carregarJogo('Ditado Visual')">🖼️ Ditado Visual</li>
+                <li class="sub-item" onclick="carregarJogo('Rima Maluca')">🎵 Rima Maluca</li>
+                <li class="sub-item" onclick="carregarJogo('Qual é a Letra?')">❓ Qual é a Letra?</li>
+                <li class="sub-item" onclick="carregarJogo('Memória de Palavras')">🧠 Memória de Palavras</li>
+                <li class="sub-item" onclick="carregarJogo('Palavra Oculta')">🔎 Palavra Oculta</li>
+                <li class="sub-item" onclick="carregarJogo('Sombras Mágicas')">🌑 Sombras Mágicas</li>
+            </ul>
+
+            <li class="nav-item" onclick="toggleSubMenu('matematica', this)">
+                <i class="icon">🔢</i> Matemática <span class="seta">▼</span>
+            </li>
+            <ul class="sub-menu" id="sub-matematica">
+                <li class="sub-item" onclick="carregarJogo('Soma Criativa')">➕ Soma Criativa</li>
+                <li class="sub-item" onclick="carregarJogo('Subtração Divertida')">➖ Subtração Divertida</li>
+                <li class="sub-item" onclick="carregarJogo('Contagem')">🔢 Contagem</li>
+                <li class="sub-item" onclick="carregarJogo('Qual é o Maior?')">📊 Qual é o Maior?</li>
+                <li class="sub-item" onclick="carregarJogo('Sequência')">➡️ Sequência</li>
+                <li class="sub-item" onclick="carregarJogo('Formas Geométricas')">⬛ Formas Geométricas</li>
+                <li class="sub-item" onclick="carregarJogo('Relógio Digital')">⏰ Relógio Digital</li>
+                <li class="sub-item" onclick="carregarJogo('Pares e Ímpares')">🔢 Pares e Ímpares</li>
+                <li class="sub-item" onclick="carregarJogo('Classificação de Cores')">🎨 Classificação de Cores</li>
+                <li class="sub-item" onclick="carregarJogo('Contagem de Objetos')">🔟 Contagem de Objetos</li>
+            </ul>
+
+            <li class="nav-item" onclick="toggleSubMenu('ciencias', this)">
+                <i class="icon">🧪</i> Ciências <span class="seta">▼</span>
+            </li>
+            <ul class="sub-menu" id="sub-ciencias">
+                <li class="sub-item" onclick="carregarJogo('Ciclo da Água')">💧 Ciclo da Água</li>
+                <li class="sub-item" onclick="carregarJogo('Animais e Habitats')">🐘 Animais e Habitats</li>
+                <li class="sub-item" onclick="carregarJogo('Corpo Humano')">🧠 Corpo Humano</li>
+                <li class="sub-item" onclick="carregarJogo('Reciclagem')">♻️ Reciclagem</li>
+                <li class="sub-item" onclick="carregarJogo('Sistema Solar')">🪐 Sistema Solar</li>
+                <li class="sub-item" onclick="carregarJogo('Estados da Matéria')">💧❄️💨 Estados da Matéria</li>
+                <li class="sub-item" onclick="carregarJogo('Plantas')">🌻 Plantas</li>
+                <li class="sub-item" onclick="carregarJogo('Sentidos')">👁️👂👃👅✋ Sentidos</li>
+                <li class="sub-item" onclick="carregarJogo('Emoções')">😊 Emoções</li>
+                <li class="sub-item" onclick="carregarJogo('Minha Rotina')">⏰ Minha Rotina</li>
+                <li class="sub-item" onclick="carregarJogo('Cuidado com o Ambiente')">🌍 Cuidado com o Ambiente</li>
+            </ul>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <section id="home-section" class="page active">
+            <div class="hero-card">
+                <h1>Bem-vindo ao Ambiente Virtual</h1>
+                <p>Escolha uma matéria no menu lateral para começar os desafios educativos.</p>
+            </div>
+            <div class="grid-info">
+                <div class="card-base">
+                    <h3>Quem somos?</h3>
+                    <p>Olá! Somos Ana Carolina Gattes Roriz e Bruno Silva de Oliveira, estudantes do 3º ano do Ensino Médio Integrado ao Técnico em Informática do IFMS.<br> Este site nasceu do nosso Trabalho de Conclusão de Curso (TCC), mas, mais do que um projeto escolar, ele carrega um propósito especial: oferecer um ponto de apoio para crianças com Transtorno do Espectro Autista (TEA) e para suas famílias.<br> A ideia surgiu ao percebermos como a tecnologia pode ser uma ponte para o aprendizado, a comunicação e o acolhimento.<br> Unindo os conhecimentos que adquirimos ao longo do curso técnico com pesquisas sobre o universo do TEA, decidimos criar um ambiente digital pensado com carinho, acessível e cheio de recursos.</p>
+                </div>
+                <div class="card-base">
+                    <h3>Como foi feito?</h3>
+                    <p>Para dar vida a esse projeto, utilizamos o que há de mais moderno na área da tecnologia: ferramentas de inteligência artificial.<br> Elas nos auxiliaram na escrita dos códigos, na organização das ideias e na criação de conteúdos, permitindo que nós, como estudantes, conseguíssemos desenvolver um site completo e de qualidade, mesmo estando no início da nossa jornada profissional.<br> Acreditamos que a união entre o conhecimento humano e a inovação tecnológica pode transformar vidas. Esperamos que este site seja um cantinho de descobertas, conforto e diversão para as crianças e um suporte útil para quem caminha ao lado delas.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="games-section" class="page">
+            <h2 id="category-name" style="margin-bottom: 20px; color: var(--accent-color);">Jogo</h2>
+            
+            <!-- BARRA DE PROGRESSO -->
+            <div class="progresso-card">
+                <div class="progresso-header">
+                    <div class="progresso-info">
+                        <div class="progresso-nivel">
+                            <span>🏆</span>
+                            <span>Nível</span>
+                            <span id="nivel-atual">1</span>
+                        </div>
+                        <div class="progresso-pontos">
+                            <span>⭐</span>
+                            <span>Total de Pontos</span>
+                            <span id="pontuacao-total">0</span>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="btn-reset-progresso" onclick="resetarProgresso()">
+                            🔄 Resetar Progresso
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="progresso-bar-container">
+                    <div id="progresso-fill-principal" class="progresso-fill-moderno">
+                        <span id="progresso-texto-principal" class="progresso-texto">0%</span>
+                    </div>
+                </div>
+                
+                <div class="progresso-marcadores">
+                    <div class="progresso-marcador"><span>🚀</span><span>Iniciante</span></div>
+                    <div class="progresso-marcador"><span>🎯</span><span>Meta: 100 pts/nível</span></div>
+                    <div class="progresso-marcador"><span>🏅</span><span>Avançado</span></div>
+                </div>
+                <button class="btn-reset-progresso" onclick="limparProgressoSalvo()" style="background: #ff9800;">
+                    🗑️ Limpar Progresso
+                </button>
+            </div>
+            <!-- FIM BARRA DE PROGRESSO -->
+            
+            <div id="games-container"></div>
+        </section>
+        
+        <section class="apoiadores-section">
+            <div class="apoiadores-container">
+                <h4 class="apoiadores-titulo">Nossos Apoiadores</h4>
+                <div class="carousel-window">
+                    <div class="carousel-track" id="carousel-track"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- PLAYER DE MÚSICA -->
+<div id="music-player" class="music-player">
+    <div class="music-player-header" onclick="toggleMusicPlayer()">
+        <span class="music-icon">🎵</span>
+        <span class="music-title">Músicas</span>
+        <button class="music-toggle" onclick="toggleMusicPlayer(event)">−</button>
+    </div>
+    <div class="music-player-content">
+        <div class="music-controls">
+            <button class="music-btn" onclick="playLocalMusic()">▶️</button>
+            <button class="music-btn" onclick="pauseLocalMusic()">⏸️</button>
+            <button class="music-btn" onclick="stopLocalMusic()">⏹️</button>
+            <button class="music-btn" onclick="prevLocalMusic()">⏮️</button>
+            <button class="music-btn" onclick="nextLocalMusic()">⏭️</button>
+        </div>
+        <div class="music-info">
+            <span id="current-music-name">🎧 Carregando...</span>
+        </div>
+        <div class="music-volume">
+            <span>🔊</span>
+            <input type="range" id="local-volume-control" min="0" max="100" value="50" onchange="setLocalVolume(this.value)">
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
