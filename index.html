@@ -49,6 +49,10 @@
                 <button class="btn-tema" data-tema="pastel" onclick="applyTheme('pastel')">🎨 Pastel</button>
                 <button class="btn-tema" data-tema="high-contrast" onclick="applyTheme('high-contrast')">⚡ Alto Contraste</button>
                 <button class="btn-tema" data-tema="blue" onclick="applyTheme('blue')">💙 Azul Calmante</button>
+                <button class="btn-tema" data-tema="verde" onclick="applyTheme('verde')">🌿 Verde Natureza</button>
+                <button class="btn-tema" data-tema="roxo" onclick="applyTheme('roxo')">💜 Lavanda</button>
+                <button class="btn-tema" data-tema="oceano" onclick="applyTheme('oceano')">🌊 Oceano</button>
+                <button class="btn-tema" data-tema="sunset" onclick="applyTheme('sunset')">🌅 Pôr do Sol</button>
             </div>
         </div>
         
@@ -89,7 +93,13 @@
     <button id="btn-reiniciar" class="btn-acessibilidade" onclick="reiniciarJogoAtual()">
         🔄 Reiniciar Jogo
     </button>
+    <button id="btn-conquistas" class="btn-acessibilidade" onclick="toggleConquistasPanel()">
+        🏆 Conquistas
+    </button>
 </div>
+
+<!-- TOASTS DE FEEDBACK -->
+<div id="toast-container" aria-live="polite"></div>
 
 <div class="wrapper">
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
@@ -185,6 +195,11 @@
                             <span>Total de Pontos</span>
                             <span id="pontuacao-total">0</span>
                         </div>
+                        <div class="progresso-streak">
+                            <span>🔥</span>
+                            <span>Sequência</span>
+                            <span id="streak-atual">0</span>
+                        </div>
                     </div>
                     <div>
                         <button class="btn-reset-progresso" onclick="resetarProgresso()">
@@ -228,26 +243,42 @@
 <div id="music-player" class="music-player">
     <div class="music-player-header" onclick="toggleMusicPlayer()">
         <span class="music-icon">🎵</span>
-        <span class="music-title">Músicas</span>
+        <span class="music-title">Músicas Sensoriais</span>
         <button class="music-toggle" onclick="toggleMusicPlayer(event)">−</button>
     </div>
     <div class="music-player-content">
-        <div class="music-controls">
-            <button class="music-btn" onclick="playLocalMusic()">▶️</button>
-            <button class="music-btn" onclick="pauseLocalMusic()">⏸️</button>
-            <button class="music-btn" onclick="stopLocalMusic()">⏹️</button>
-            <button class="music-btn" onclick="prevLocalMusic()">⏮️</button>
-            <button class="music-btn" onclick="nextLocalMusic()">⏭️</button>
-        </div>
         <div class="music-info">
             <span id="current-music-name">🎧 Carregando...</span>
+        </div>
+        <div class="music-controls">
+            <button class="music-btn" onclick="prevLocalMusic()">⏮️</button>
+            <button class="music-btn music-btn-play" onclick="playLocalMusic()">▶️</button>
+            <button class="music-btn" onclick="pauseLocalMusic()">⏸️</button>
+            <button class="music-btn" onclick="stopLocalMusic()">⏹️</button>
+            <button class="music-btn" onclick="nextLocalMusic()">⏭️</button>
         </div>
         <div class="music-volume">
             <span>🔊</span>
             <input type="range" id="local-volume-control" min="0" max="100" value="50" onchange="setLocalVolume(this.value)">
         </div>
+        <div class="music-playlist-titulo">ESCOLHA A SUA MÚSICA:</div>
+        <div id="playlist-lista" class="music-playlist-lista"></div>
     </div>
 </div>
+
+<!-- PAINEL FLUTUANTE DE CONQUISTAS -->
+<div id="conquistas-player" class="music-player conquistas-flutuante collapsed">
+    <div class="music-player-header conquistas-header" onclick="toggleConquistasPanel()">
+        <span class="music-icon">🏆</span>
+        <span class="music-title">Conquistas <span id="conquistas-contador"></span></span>
+        <button class="music-toggle" onclick="toggleConquistasPanel(event)">−</button>
+    </div>
+    <div class="music-player-content">
+        <div id="conquistas-lista" class="conquistas-lista"></div>
+    </div>
+</div>
+
+<button id="btn-abrir-conquistas" class="btn-abrir-conquistas" onclick="toggleConquistasPanel()">🏆</button>
 
 <script src="script.js"></script>
 </body>
