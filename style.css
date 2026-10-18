@@ -418,28 +418,26 @@ button, .btn-acessibilidade, .btn-tema, .btn-fonte, .btn-espacamento, .nav-item,
 
 
 @media (max-width: 768px) {
-    .gov-header {
-        height: 70px;
+    .main-content { padding: 1rem; }
+    .hero-card h1 { font-size: 1.4rem; }
+    .music-player { width: 240px; left: 10px; bottom: 10px; }
+    .acessibilidade-bar { gap: 8px; padding: 8px 12px; }
+
+    /* 🔧 Painel de personalização reposicionado */
+    .personalizacao-panel {
+        top: auto;
+        bottom: 90px;
+        right: 12px;
+        left: auto;
     }
-    .header-container {
-        padding: 0 1rem;
-    }
-    .logo-main {
-        font-size: 1.4rem;
-    }
-    .logo-icon {
-        font-size: 1.8rem;
-    }
-    .logo-subtitle {
-        font-size: 0.6rem;
-        padding: 2px 8px;
-    }
-    .status-container {
-        padding: 4px 12px;
-        gap: 6px;
-    }
-    .status-badge {
-        font-size: 0.7rem;
+
+    .personalizacao-menu {
+        width: min(90vw, 320px);
+        max-height: 70vh;
+        overflow-y: auto;
+        right: 0;
+        left: auto;
+        transform: none;
     }
 }
 
@@ -1174,8 +1172,26 @@ button, .btn-acessibilidade, .btn-tema, .btn-fonte, .btn-espacamento, .nav-item,
     .hero-card h1 { font-size: 1.2rem; }
     .card-base { padding: 1rem; }
     .music-player { width: calc(100vw - 20px); max-width: 280px; }
-    .personalizacao-menu { width: min(88vw, 320px); }
     .apoiadores-section { margin-bottom: 90px; }
+
+    /* 🔧 Painel de personalização reposicionado para não sair da tela */
+    .personalizacao-panel {
+        bottom: 80px;
+        right: 8px;
+        left: auto;
+        top: auto;
+    }
+
+    .personalizacao-menu {
+        width: calc(100vw - 24px);
+        max-width: 340px;
+        max-height: 65vh;
+        overflow-y: auto;
+        padding: 16px;
+        right: 0;
+        left: auto;
+        transform: none;
+    }
 
     /* Encolhe elementos dos jogos para caber sem estourar a tela */
     .slot-vazio, .letra-item, .slot-sombra {
