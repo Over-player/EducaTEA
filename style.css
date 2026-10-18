@@ -2485,122 +2485,12 @@ body.espacamento-confortavel { line-height: 1.8; }
 }
 
 /* =======================================================
-   APENAS PARA CELULAR (Telas até 768px)
+   CORREÇÃO DO MENU DE TEMAS NO CELULAR
    ======================================================= */
 @media (max-width: 768px) {
-    
-    /* 1. O Player de Música vira um botão redondo */
-    .music-player {
-        position: fixed !important;
-        bottom: 15px !important;
-        left: 15px !important;
-        width: 60px !important;
-        height: 60px !important;
-        border-radius: 50% !important;
-        border: 3px solid var(--accent-color) !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
-        overflow: hidden !important; /* Corta o texto quando fechado */
-        z-index: 2000 !important;
-        transition: all 0.3s ease !important;
-    }
-
-    /* Esconde os textos e botões quando está fechado (deixa só o ícone) */
-    .music-player .music-title, 
-    .music-player .music-toggle {
-        display: none !important;
-    }
-    
-    .music-player .music-player-header {
-        padding: 0 !important;
-        justify-content: center !important;
-        height: 100% !important;
-        border-radius: 50% !important;
-    }
-    
-    .music-player .music-icon {
-        font-size: 1.8rem !important;
-        margin: 0 !important;
-    }
-
-    /* 2. O Conquistas também vira um botão redondo */
-    .conquistas-flutuante {
-        position: fixed !important;
-        bottom: 15px !important;
-        right: 15px !important;
-        left: auto !important;
-        width: 60px !important;
-        height: 60px !important;
-        border-radius: 50% !important;
-        border: 3px solid #ffd166 !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
-        overflow: hidden !important;
-        z-index: 2000 !important;
-        transition: all 0.3s ease !important;
-    }
-
-    .conquistas-flutuante .music-title,
-    .conquistas-flutuante .music-toggle {
-        display: none !important;
-    }
-
-    .conquistas-flutuante .music-player-header {
-        padding: 0 !important;
-        justify-content: center !important;
-        height: 100% !important;
-        border-radius: 50% !important;
-    }
-
-    .conquistas-flutuante .music-icon {
-        font-size: 1.8rem !important;
-        margin: 0 !important;
-    }
-
-    /* 3. QUANDO CLICADO (ABERTO), ELE EXPANDE PARA TELA TODA */
-    .music-player:not(.collapsed), 
-    .conquistas-flutuante:not(.collapsed) {
-        width: calc(100vw - 30px) !important;
-        height: 60vh !important;
-        max-height: 400px !important;
-        border-radius: 20px !important;
-        left: 15px !important;
-        right: 15px !important;
-        bottom: 15px !important;
-        overflow: visible !important;
-    }
-
-    /* Mostra os textos novamente quando aberto */
-    .music-player:not(.collapsed) .music-title,
-    .music-player:not(.collapsed) .music-toggle,
-    .conquistas-flutuante:not(.collapsed) .music-title,
-    .conquistas-flutuante:not(.collapsed) .music-toggle {
-        display: block !important;
-    }
-
-    .music-player:not(.collapsed) .music-player-header,
-    .conquistas-flutuante:not(.collapsed) .music-player-header {
-        padding: 10px 15px !important;
-        justify-content: space-between !important;
-        border-radius: 20px 20px 0 0 !important;
-    }
-
-    /* 4. SE UM ESTIVER ABERTO, ESCONDE O OUTRO */
-    .music-player:not(.collapsed) ~ .conquistas-flutuante {
-        display: none !important;
-    }
-    
-    .conquistas-flutuante:not(.collapsed) ~ .music-player {
-        display: none !important;
-    }
-
-    /* 5. Ajuste do Botão de Temas (🎨) para não encostar nos outros */
-    .personalizacao-panel {
-        bottom: 85px !important; 
-        right: 15px !important;
-        z-index: 2000 !important;
-    }
-
-    /* Menu de temas no meio da tela */
+    /* O menu de temas abre no meio da tela, escurecendo o fundo */
     #personalizacao-menu.active {
+        display: block !important;
         position: fixed !important;
         top: 50% !important;
         left: 50% !important;
@@ -2610,6 +2500,18 @@ body.espacamento-confortavel { line-height: 1.8; }
         max-height: 75vh !important;
         overflow-y: auto !important;
         z-index: 99999 !important; 
+        background: var(--bg-card) !important;
+        border: 3px solid var(--accent-color) !important;
+        border-radius: 20px !important;
+        padding: 20px !important;
         box-shadow: 0 0 0 100vw rgba(0, 0, 0, 0.6) !important;
+    }
+    
+    .personalizacao-menu { animation: none !important; }
+
+    /* Posiciona o botão roxo (🎨) um pouco mais para cima para não sobrepor a música */
+    .personalizacao-panel {
+        bottom: 100px !important; 
+        right: 15px !important;
     }
 }
