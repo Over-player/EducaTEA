@@ -1138,17 +1138,7 @@ function toggleConquistasPanel(event) {
     if (event) event.stopPropagation();
     renderConquistas();
     const painel = document.getElementById('conquistas-player');
-    const player = document.getElementById('music-player');
-    
-    if (painel) {
-        const vaiAbrir = painel.classList.contains('collapsed');
-        painel.classList.toggle('collapsed');
-        
-        // Se as conquistas vão abrir, fecha a música
-        if (vaiAbrir && player) {
-            player.classList.add('collapsed');
-        }
-    }
+    if (painel) painel.classList.toggle('collapsed');
 }
 
 let somAtivo = true;
@@ -2921,17 +2911,7 @@ function setLocalVolume(value) {
 function toggleMusicPlayer(event) {
     if (event) event.stopPropagation();
     const player = document.getElementById('music-player');
-    const conquistas = document.getElementById('conquistas-player');
-    
-    if (player) {
-        const vaiAbrir = player.classList.contains('collapsed');
-        player.classList.toggle('collapsed');
-        
-        // Se a música vai abrir, fecha as conquistas
-        if (vaiAbrir && conquistas) {
-            conquistas.classList.add('collapsed');
-        }
-    }
+    if (player) player.classList.toggle('collapsed');
 }
 
 // ================= CARROSSEL =================
