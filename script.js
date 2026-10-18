@@ -1194,12 +1194,15 @@ const DIREÇÕES = [
 function posicionarPalavraNoGrid(grid, palavra, tamanho) {
     for (let tentativa = 0; tentativa < 200; tentativa++) {
         const dir = DIREÇÕES[Math.floor(Math.random() * DIREÇÕES.length)];
-        const maxRow = (dir.dr === 1) ? tamanho - palavra.length : (dir.dr === -1) ? palavra.length - 1 : tamanho - 1;
-        const maxCol = (dir.dc === 1) ? tamanho - palavra.length : (dir.dc === -1) ? palavra.length - 1 : tamanho - 1;
-        if (maxRow < 0 || maxCol < 0) continue;
+        // limites para a palavra caber inteira na grade, em qualquer direção
+        const minRow = (dir.dr === -1) ? palavra.length - 1 : 0;
+        const maxRow = (dir.dr === 1) ? tamanho - palavra.length : tamanho - 1;
+        const minCol = (dir.dc === -1) ? palavra.length - 1 : 0;
+        const maxCol = (dir.dc === 1) ? tamanho - palavra.length : tamanho - 1;
+        if (maxRow < minRow || maxCol < minCol) continue;
 
-        const row = Math.floor(Math.random() * (maxRow + 1));
-        const col = Math.floor(Math.random() * (maxCol + 1));
+        const row = minRow + Math.floor(Math.random() * (maxRow - minRow + 1));
+        const col = minCol + Math.floor(Math.random() * (maxCol - minCol + 1));
         
         let valido = true;
         for (let i = 0; i < palavra.length; i++) {
@@ -1231,11 +1234,11 @@ function telaCacaPalavras() {
     
     const nivel = Math.min(estadoAtual.nivelAtual, 3);
     const temaAtual = palavrasTema[nivel];
-    const palavraBuscar = temaAtual.palavras[Math.floor(Math.random() * temaAtual.palavras.length)];
-    
     let gridSize = 10;
     if (nivel === 2) gridSize = 12;
     if (nivel === 3) gridSize = 14;
+    const palavrasQueCabem = temaAtual.palavras.filter(p => p.length <= gridSize);
+    const palavraBuscar = palavrasQueCabem[Math.floor(Math.random() * palavrasQueCabem.length)];
     
     let grid = Array(gridSize).fill().map(() => Array(gridSize).fill(''));
     posicionarPalavraNoGrid(grid, palavraBuscar, gridSize);
@@ -1278,8 +1281,13 @@ function telaCacaPalavras() {
     </div>`;
     document.getElementById('games-container').innerHTML = html;
     
-    let isDragging = false;
+    const gridEl = document.getElementById('grid-caca');
     const cells = document.querySelectorAll('.letra-caca');
+    const COR_SEL = "#2ecc71";
+    
+    function celulaEm(row, col) {
+        return gridEl.querySelector(`.letra-caca[data-row="${row}"][data-col="${col}"]`);
+    }
     
     function atualizarPreview() {
         let palavra = "";
@@ -1296,43 +1304,95 @@ function telaCacaPalavras() {
         atualizarPreview();
     }
     
-    function toggleCelula(cell, isDrag = false) {
-        const row = parseInt(cell.dataset.row), col = parseInt(cell.dataset.col);
-        const selecionadas = estadoAtual.jogoCacaAtual.selecionadas;
-        const index = selecionadas.findIndex(s => s.row === row && s.col === col);
-        
-        if (index === -1) {
-            if (isDrag && selecionadas.length > 0) {
-                const ultima = selecionadas[selecionadas.length - 1];
-                const diffRow = Math.abs(ultima.row - row);
-                const diffCol = Math.abs(ultima.col - col);
-                if (diffRow <= 1 && diffCol <= 1 && !(diffRow === 0 && diffCol === 0)) {
-                    selecionadas.push({ row, col });
-                    cell.style.background = "#2ecc71";
-                }
-            } else if (!isDrag || selecionadas.length === 0) {
-                if (!isDrag) limparSelecao();
-                selecionadas.push({ row, col });
-                cell.style.background = "#2ecc71";
-            }
-        }
-        atualizarPreview();
+    function selecionar(row, col) {
+        const sel = estadoAtual.jogoCacaAtual.selecionadas;
+        if (sel.some(s => s.row === row && s.col === col)) return;
+        sel.push({ row, col });
+        const c = celulaEm(row, col);
+        if (c) c.style.background = COR_SEL;
     }
     
-    cells.forEach(cell => {
-        cell.addEventListener('click', () => toggleCelula(cell, false));
-        cell.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            limparSelecao();
-            toggleCelula(cell, true);
-            e.preventDefault();
-        });
-        cell.addEventListener('mouseenter', () => {
-            if (isDragging) toggleCelula(cell, true);
-        });
+    function desselecionarUltima() {
+        const sel = estadoAtual.jogoCacaAtual.selecionadas;
+        const u = sel.pop();
+        if (u) { const c = celulaEm(u.row, u.col); if (c) c.style.background = "var(--bg-hover)"; }
+    }
+    
+    // Estende a seleção até a célula (row,col). Se o dedo pulou células
+    // (arrasto rápido), preenche as do meio quando estão em linha reta.
+    function estenderAte(row, col) {
+        const sel = estadoAtual.jogoCacaAtual.selecionadas;
+        if (sel.length === 0) { selecionar(row, col); return; }
+        // voltar para a penúltima desfaz a última letra
+        if (sel.length >= 2) {
+            const pen = sel[sel.length - 2];
+            if (pen.row === row && pen.col === col) { desselecionarUltima(); return; }
+        }
+        const ult = sel[sel.length - 1];
+        const dr = row - ult.row, dc = col - ult.col;
+        if (dr === 0 && dc === 0) return;
+        if (!(dr === 0 || dc === 0 || Math.abs(dr) === Math.abs(dc))) return;
+        const passos = Math.max(Math.abs(dr), Math.abs(dc));
+        const sr = Math.sign(dr), sc = Math.sign(dc);
+        for (let k = 1; k <= passos; k++) selecionar(ult.row + sr * k, ult.col + sc * k);
+    }
+    
+    function celulaDoPonto(x, y) {
+        const el = document.elementFromPoint(x, y);
+        return el && el.closest ? el.closest('.letra-caca') : null;
+    }
+    
+    let arrastando = false, moveu = false, celulaInicial = null;
+    
+    gridEl.addEventListener('pointerdown', (e) => {
+        const cell = e.target.closest('.letra-caca');
+        if (!cell) return;
+        arrastando = true; moveu = false; celulaInicial = cell;
+        try { gridEl.setPointerCapture(e.pointerId); } catch (_) {}
+        e.preventDefault();
     });
     
-    document.addEventListener('mouseup', () => { isDragging = false; });
+    gridEl.addEventListener('pointermove', (e) => {
+        if (!arrastando) return;
+        const cell = celulaDoPonto(e.clientX, e.clientY);
+        if (!cell) return;
+        if (!moveu) {
+            if (cell === celulaInicial) return;   // ainda na primeira letra
+            moveu = true;
+            limparSelecao();
+            selecionar(parseInt(celulaInicial.dataset.row), parseInt(celulaInicial.dataset.col));
+        }
+        estenderAte(parseInt(cell.dataset.row), parseInt(cell.dataset.col));
+        atualizarPreview();
+    });
+    
+    function terminar(e) {
+        if (!arrastando) return;
+        arrastando = false;
+        if (!moveu && celulaInicial && e.type === 'pointerup') {
+            // toque simples: soma a letra, desmarca se for a última, ou recomeça se não for vizinha
+            const row = parseInt(celulaInicial.dataset.row), col = parseInt(celulaInicial.dataset.col);
+            const sel = estadoAtual.jogoCacaAtual.selecionadas;
+            const ult = sel[sel.length - 1];
+            if (ult && ult.row === row && ult.col === col) {
+                desselecionarUltima();
+            } else if (sel.some(s => s.row === row && s.col === col)) {
+                // toque numa letra do meio: mantém até ela
+                while (sel.length && !(sel[sel.length - 1].row === row && sel[sel.length - 1].col === col)) desselecionarUltima();
+            } else if (!ult) {
+                selecionar(row, col);
+            } else {
+                const dr = row - ult.row, dc = col - ult.col;
+                if (dr === 0 || dc === 0 || Math.abs(dr) === Math.abs(dc)) estenderAte(row, col);
+                else { limparSelecao(); selecionar(row, col); }
+            }
+            atualizarPreview();
+        }
+        celulaInicial = null;
+    }
+    gridEl.addEventListener('pointerup', terminar);
+    gridEl.addEventListener('pointercancel', terminar);
+    
     window.limparSelecaoCaca = limparSelecao;
 }
 
@@ -2515,9 +2575,9 @@ function initCarrossel() {
     const track = document.getElementById('carousel-track');
     if (!track) return;
     const imagens = [
-        "../site interativo/imagens/logo_ifms-removebg-preview.png",
-        "../site interativo/imagens/image-removebg-preview.png",
-        "../site interativo/imagens/APAE.png"
+        "imagens/logo_ifms-removebg-preview.png",
+        "imagens/image-removebg-preview.png",
+        "imagens/APAE.png"
     ];
     let slidesHTML = '';
     for (let i = 0; i < 4; i++) {
