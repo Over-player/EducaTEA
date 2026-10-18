@@ -1410,27 +1410,55 @@ function telaCacaPalavras() {
     
     estadoAtual.jogoCacaAtual = { grid, palavraBuscar, selecionadas: [] };
     
+    // 🔧 Cálculo dinâmico do tamanho da célula para caber na tela
+    const larguraDisponivel = Math.min(window.innerWidth - 40, 720);
+    const espacamento = 4;
+    const tamanhoCelula = Math.max(22, Math.floor((larguraDisponivel - (gridSize - 1) * espacamento) / gridSize));
+    const tamanhoFonte = Math.max(0.65, Math.min(1.1, tamanhoCelula / 38));
+    
     let html = `<div class="jogo-wrapper">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: var(--accent-color);">🔍 Caça-Palavras</h2>
-            <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <h2 style="color: var(--accent-color); margin: 0;">🔍 Caça-Palavras</h2>
+            <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
                 <span>⭐ Nível ${nivel}/3</span>
             </div>
         </div>
         <p>Tema: <strong>${temaAtual.tema}</strong></p>
-        <p>Encontre a palavra: <strong style="color: var(--accent-color); font-size: 1.5rem;">${palavraBuscar}</strong></p>
-        <div id="grid-caca" style="display: grid; grid-template-columns: repeat(${gridSize}, 42px); gap: 4px; justify-content: center; margin: 20px 0; user-select: none;">`;
+        <p>Encontre a palavra: <strong style="color: var(--accent-color); font-size: 1.3rem; word-break: break-word;">${palavraBuscar}</strong></p>
+        <div id="grid-caca" style="
+            display: grid;
+            grid-template-columns: repeat(${gridSize}, ${tamanhoCelula}px);
+            gap: ${espacamento}px;
+            justify-content: center;
+            margin: 20px auto;
+            user-select: none;
+            max-width: 100%;
+            overflow-x: auto;
+            padding: 4px;
+        ">`;
     
     for (let i = 0; i < gridSize; i++) {
         for (let j = 0; j < gridSize; j++) {
-            html += `<div class="letra-caca" data-row="${i}" data-col="${j}" style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: var(--bg-hover); border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1rem;">${grid[i][j]}</div>`;
+            html += `<div class="letra-caca" data-row="${i}" data-col="${j}" style="
+                width: ${tamanhoCelula}px;
+                height: ${tamanhoCelula}px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--bg-hover);
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: ${tamanhoFonte}rem;
+                flex-shrink: 0;
+            ">${grid[i][j]}</div>`;
         }
     }
     html += `</div>
         <div style="margin-top: 20px; text-align: center;">
-            <span id="palavra-formando" style="color: var(--accent-color); font-weight: bold; letter-spacing: 2px;"></span>
+            <span id="palavra-formando" style="color: var(--accent-color); font-weight: bold; letter-spacing: 2px; word-break: break-all;"></span>
         </div>
-        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
             <button class="btn-verificar" onclick="verificarCacaPalavras()">✅ Verificar</button>
             <button class="btn-voltar" onclick="telaCacaPalavras()">🔄 Nova Palavra</button>
             <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button>
@@ -1490,6 +1518,28 @@ function telaCacaPalavras() {
         });
         cell.addEventListener('mouseenter', () => {
             if (isDragging) toggleCelula(cell, true);
+        });
+        
+        // 🔧 Suporte a toque no celular/tablet
+        cell.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            limparSelecao();
+            toggleCelula(cell, true);
+            e.preventDefault();
+        }, { passive: false });
+        
+        cell.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const el = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (el && el.classList.contains('letra-caca')) {
+                toggleCelula(el, true);
+            }
+        }, { passive: false });
+        
+        cell.addEventListener('touchend', () => {
+            isDragging = false;
         });
     });
     
