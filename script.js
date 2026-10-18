@@ -352,41 +352,15 @@ function registrarAcerto(jogoNome, tipoAcerto = 'ACERTO_SIMPLES', bonusAdicional
     let pontosBase = SISTEMA_PROGRESSO.PONTOS[tipoAcerto] || 10;
     const nivel = estadoAtual.nivelAtual || 1;
     const multiplicador = 1 + ((nivel - 1) * 0.1);
-
-    // Sequência de acertos (streak) e bônus de combo
-    estadoAtual.streakAtual = (estadoAtual.streakAtual || 0) + 1;
-    estadoAtual.melhorStreak = Math.max(estadoAtual.melhorStreak || 0, estadoAtual.streakAtual);
-    estadoAtual.totalAcertos = (estadoAtual.totalAcertos || 0) + 1;
-    const bonusCombo = Math.min((estadoAtual.streakAtual - 1) * 2, 20);
-
-    // Estatísticas por jogo
-    estadoAtual.estatisticasJogos = estadoAtual.estatisticasJogos || {};
-    if (!estadoAtual.estatisticasJogos[jogoNome]) estadoAtual.estatisticasJogos[jogoNome] = { acertos: 0, erros: 0 };
-    estadoAtual.estatisticasJogos[jogoNome].acertos++;
-
-    let pontosGanhos = Math.floor((configJogo.base + pontosBase) * multiplicador) + bonusAdicional + bonusCombo;
-
+    let pontosGanhos = Math.floor((configJogo.base + pontosBase) * multiplicador) + bonusAdicional;
+    
     estadoAtual.pontuacaoTotal = (estadoAtual.pontuacaoTotal || 0) + pontosGanhos;
     atualizarProgresso();
-    atualizarStreakVisual();
     salvarProgresso();
-    checarConquistas();
-
-    let textoMsg = `✅ +${pontosGanhos} pontos!`;
-    if (bonusCombo > 0) textoMsg += ` (combo +${bonusCombo})`;
-    if (estadoAtual.streakAtual >= 3) textoMsg += ` 🔥 Sequência: ${estadoAtual.streakAtual}`;
     if (typeof mostrarMensagem === 'function') {
-        mostrarMensagem(textoMsg, true);
+        mostrarMensagem(`✅ +${pontosGanhos} pontos!`, true);
     }
     return pontosGanhos;
-}
-
-function registrarErro(jogoNome) {
-    estadoAtual.estatisticasJogos = estadoAtual.estatisticasJogos || {};
-    if (!estadoAtual.estatisticasJogos[jogoNome]) estadoAtual.estatisticasJogos[jogoNome] = { acertos: 0, erros: 0 };
-    estadoAtual.estatisticasJogos[jogoNome].erros++;
-    quebrarStreak();
-    salvarProgresso();
 }
 
 function salvarProgresso() {
@@ -394,10 +368,6 @@ function salvarProgresso() {
         nivel: estadoAtual.nivelAtual || 1,
         pontuacaoTotal: estadoAtual.pontuacaoTotal || 0,
         historicoPerguntas: estadoAtual.historicoPerguntas,
-        melhorStreak: estadoAtual.melhorStreak || 0,
-        totalAcertos: estadoAtual.totalAcertos || 0,
-        conquistas: estadoAtual.conquistas || [],
-        estatisticasJogos: estadoAtual.estatisticasJogos || {},
         data: new Date().toISOString()
     };
     localStorage.setItem('progresso_educa_tea', JSON.stringify(progresso));
@@ -413,13 +383,7 @@ function carregarProgresso() {
             if (progresso.historicoPerguntas) {
                 estadoAtual.historicoPerguntas = progresso.historicoPerguntas;
             }
-            estadoAtual.melhorStreak = progresso.melhorStreak || 0;
-            estadoAtual.totalAcertos = progresso.totalAcertos || 0;
-            estadoAtual.conquistas = progresso.conquistas || [];
-            estadoAtual.estatisticasJogos = progresso.estatisticasJogos || {};
-            estadoAtual.streakAtual = 0;
             atualizarProgresso();
-            atualizarStreakVisual();
             return true;
         } catch(e) {
             console.log("Erro ao carregar progresso");
@@ -440,14 +404,8 @@ function resetarProgresso() {
         estadoAtual.nivelAtual = 1;
         estadoAtual.pontuacaoTotal = 0;
         estadoAtual.historicoPerguntas = {};
-        estadoAtual.streakAtual = 0;
-        estadoAtual.melhorStreak = 0;
-        estadoAtual.totalAcertos = 0;
-        estadoAtual.conquistas = [];
-        estadoAtual.estatisticasJogos = {};
         localStorage.removeItem('progresso_educa_tea');
         atualizarProgresso();
-        atualizarStreakVisual();
         if (typeof mostrarMensagem === 'function') {
             mostrarMensagem("🔄 Progresso resetado! Você voltou ao Nível 1.", true);
         }
@@ -1010,35 +968,7 @@ function carregarJogos(nomeJogo) {
 
 function carregarJogo(nomeJogo) { return carregarJogos(nomeJogo); }
 
-// ================= FEEDBACK VISUAL (TOASTS) E SOM =================
-// Mensagens que NÃO representam um erro de resposta (avisos, validação, carregando),
-// então não devem quebrar a sequência de acertos do usuário.
-const IGNORAR_QUEBRA_STREAK = [
-    "Escolha ou digite", "Selecione as letras", "já está preenchido",
-    "Carregando dados", "em desenvolvimento", "Nenhum dado disponível",
-    "primeiro!"
-];
-
-function exibirToast(mensagem, sucesso) {
-    if (!mensagem) return;
-    let container = document.getElementById('toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'toast-container';
-        container.setAttribute('aria-live', 'polite');
-        document.body.appendChild(container);
-    }
-    const toast = document.createElement('div');
-    toast.className = 'toast ' + (sucesso ? 'toast-sucesso' : 'toast-erro');
-    toast.innerHTML = `<span class="toast-texto">${mensagem}</span>`;
-    container.appendChild(toast);
-    requestAnimationFrame(() => toast.classList.add('toast-visivel'));
-    setTimeout(() => {
-        toast.classList.remove('toast-visivel');
-        setTimeout(() => toast.remove(), 400);
-    }, 3200);
-}
-
+// ================= FEEDBACK E SOM =================
 function mostrarMensagem(mensagem, sucesso = true) {
     if (sucesso) {
         if (typeof confetti !== "undefined") {
@@ -1047,98 +977,7 @@ function mostrarMensagem(mensagem, sucesso = true) {
         tocarSom('acerto');
     } else {
         tocarSom('erro');
-        const ignorar = IGNORAR_QUEBRA_STREAK.some(sub => mensagem.includes(sub));
-        if (!ignorar) quebrarStreak();
     }
-    exibirToast(mensagem, sucesso);
-}
-
-// ================= SEQUÊNCIA DE ACERTOS (STREAK/COMBO) =================
-function atualizarStreakVisual() {
-    const el = document.getElementById('streak-atual');
-    if (!el) return;
-    el.innerText = estadoAtual.streakAtual || 0;
-    el.classList.remove('streak-pulso');
-    void el.offsetWidth;
-    el.classList.add('streak-pulso');
-}
-
-function quebrarStreak() {
-    if (estadoAtual.streakAtual) {
-        estadoAtual.streakAtual = 0;
-        atualizarStreakVisual();
-    }
-}
-
-// ================= CONQUISTAS =================
-const CONQUISTAS = [
-    { id: 'primeiro_acerto', nome: 'Primeiro Passo', emoji: '🥇', desc: 'Você acertou sua primeira pergunta!', condicao: e => (e.totalAcertos || 0) >= 1 },
-    { id: 'streak_5', nome: 'Sequência de Ouro', emoji: '🔥', desc: '5 acertos seguidos em um jogo!', condicao: e => (e.melhorStreak || 0) >= 5 },
-    { id: 'streak_10', nome: 'Imparável', emoji: '⚡', desc: '10 acertos seguidos em um jogo!', condicao: e => (e.melhorStreak || 0) >= 10 },
-    { id: 'nivel_3', nome: 'Aprendiz Dedicado', emoji: '🌱', desc: 'Alcançou o Nível 3!', condicao: e => (e.nivelAtual || 1) >= 3 },
-    { id: 'nivel_5', nome: 'Explorador', emoji: '🧭', desc: 'Alcançou o Nível 5!', condicao: e => (e.nivelAtual || 1) >= 5 },
-    { id: 'nivel_10', nome: 'Mestre do Saber', emoji: '👑', desc: 'Alcançou o Nível 10!', condicao: e => (e.nivelAtual || 1) >= 10 },
-    { id: 'pontos_250', nome: 'Juntando Estrelas', emoji: '⭐', desc: 'Acumulou 250 pontos!', condicao: e => (e.pontuacaoTotal || 0) >= 250 },
-    { id: 'pontos_500', nome: 'Colecionador de Estrelas', emoji: '🌟', desc: 'Acumulou 500 pontos!', condicao: e => (e.pontuacaoTotal || 0) >= 500 },
-    { id: 'pontos_1000', nome: 'Lenda do EducaTEA', emoji: '🏆', desc: 'Acumulou 1000 pontos!', condicao: e => (e.pontuacaoTotal || 0) >= 1000 },
-    { id: 'jogos_variados', nome: 'Curioso', emoji: '🎲', desc: 'Jogou 5 jogos diferentes!', condicao: e => Object.keys(e.estatisticasJogos || {}).length >= 5 },
-    { id: 'jogos_todos', nome: 'Explorador Completo', emoji: '🗺️', desc: 'Experimentou 10 jogos diferentes!', condicao: e => Object.keys(e.estatisticasJogos || {}).length >= 10 }
-];
-
-function mostrarConquista(conquista) {
-    const popup = document.createElement('div');
-    popup.className = 'conquista-popup';
-    popup.innerHTML = `
-        <span class="conquista-emoji-grande">${conquista.emoji}</span>
-        <div>
-            <strong>Conquista desbloqueada!</strong>
-            <strong>${conquista.nome}</strong>
-            <p>${conquista.desc}</p>
-        </div>`;
-    document.body.appendChild(popup);
-    requestAnimationFrame(() => popup.classList.add('visivel'));
-    if (typeof confetti !== "undefined") {
-        confetti({ particleCount: 140, spread: 100, origin: { y: 0.5 } });
-    }
-    tocarSom('acerto');
-    setTimeout(() => tocarSom('acerto'), 250);
-    setTimeout(() => {
-        popup.classList.remove('visivel');
-        setTimeout(() => popup.remove(), 500);
-    }, 4200);
-}
-
-function checarConquistas() {
-    estadoAtual.conquistas = estadoAtual.conquistas || [];
-    CONQUISTAS.forEach(c => {
-        if (!estadoAtual.conquistas.includes(c.id) && c.condicao(estadoAtual)) {
-            estadoAtual.conquistas.push(c.id);
-            mostrarConquista(c);
-        }
-    });
-    salvarProgresso();
-}
-
-function renderConquistas() {
-    const lista = document.getElementById('conquistas-lista');
-    if (!lista) return;
-    const desbloqueadas = estadoAtual.conquistas || [];
-    lista.innerHTML = CONQUISTAS.map(c => {
-        const ok = desbloqueadas.includes(c.id);
-        return `<div class="conquista-item ${ok ? 'desbloqueada' : 'bloqueada'}">
-            <span class="conquista-emoji">${ok ? c.emoji : '🔒'}</span>
-            <div><strong>${c.nome}</strong><p>${c.desc}</p></div>
-        </div>`;
-    }).join('');
-    const contador = document.getElementById('conquistas-contador');
-    if (contador) contador.innerText = `(${desbloqueadas.length}/${CONQUISTAS.length})`;
-}
-
-function toggleConquistasPanel(event) {
-    if (event) event.stopPropagation();
-    renderConquistas();
-    const painel = document.getElementById('conquistas-player');
-    if (painel) painel.classList.toggle('collapsed');
 }
 
 let somAtivo = true;
@@ -2590,27 +2429,18 @@ function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     userPreferences.theme = theme;
     saveUserPreferences();
-    document.querySelectorAll('.btn-tema').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-tema') === theme);
-    });
 }
 function applyFontSize(size) {
     document.body.classList.remove('fonte-pequena', 'fonte-media', 'fonte-grande');
     document.body.classList.add(`fonte-${size}`);
     userPreferences.fontSize = size;
     saveUserPreferences();
-    document.querySelectorAll('.btn-fonte').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-tamanho') === size);
-    });
 }
 function applySpacing(spacing) {
     document.body.classList.remove('espacamento-confortavel');
     if (spacing === 'comfortable') document.body.classList.add('espacamento-confortavel');
     userPreferences.spacing = spacing;
     saveUserPreferences();
-    document.querySelectorAll('.btn-espacamento').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-espacamento') === spacing);
-    });
 }
 function togglePersonalizacao() { document.getElementById('personalizacao-menu').classList.toggle('active'); }
 function resetPreferences() {
@@ -2622,124 +2452,11 @@ function resetPreferences() {
 
 // ================= MÚSICA =================
 const playlistLocal = [
-    { icon: "🎹", titulo: "Piano Waltz", subtitulo: "Suave", path: "musicas/musica1.mp3", tipo: "arquivo" },
-    { icon: "🌾", titulo: "Country Craft", subtitulo: "Foco", path: "musicas/musica2.mp3", tipo: "arquivo" },
-    { icon: "🍃", titulo: "Deep in the Dell", subtitulo: "Calmaria", path: "musicas/musica3.mp3", tipo: "arquivo" },
-    { icon: "🌼", titulo: "Village in Spring", subtitulo: "Alegria", path: "musicas/musica4.mp3", tipo: "arquivo" },
-    { icon: "🎼", titulo: "Piano Sereno", subtitulo: "Ambiente Gerado", tipo: "gerada", gerador: "piano" },
-    { icon: "✨", titulo: "Espaço Calmo", subtitulo: "Ambiente Gerado", tipo: "gerada", gerador: "espaco" },
-    { icon: "🌧️", titulo: "Chuva Suave", subtitulo: "Ambiente Gerado", tipo: "gerada", gerador: "chuva" },
-    { icon: "🌊", titulo: "Ondas do Mar", subtitulo: "Ambiente Gerado", tipo: "gerada", gerador: "mar" }
+    { name: "Piano Waltz - Neoclassical", path: "musicas/musica1.mp3" },
+    { name: "Country Craft", path: "musicas/musica2.mp3" },
+    { name: "Deep in the Dell", path: "musicas/musica3.mp3" },
+    { name: "Village in Spring", path: "musicas/musica4.mp3" }
 ];
-
-// ---- Motor de música ambiente gerada (Web Audio API) ----
-// Cria trilhas relaxantes sem precisar de arquivos externos, usando osciladores
-// (acordes suaves) e ruído filtrado (chuva/ondas), pensadas para ambientes calmos.
-let generatedNodes = [];
-let generatedTimer = null;
-let isGeneratedPlaying = false;
-let localVolumeFactor = 0.5;
-
-const PROGRESSOES_GERADAS = {
-    piano: {
-        acordes: [
-            [261.63, 329.63, 392.00], [293.66, 349.23, 440.00],
-            [220.00, 261.63, 329.63], [246.94, 293.66, 392.00]
-        ],
-        duracao: 4.5, onda: 'triangle', volumeBase: 0.09
-    },
-    espaco: {
-        acordes: [
-            [130.81, 196.00, 261.63], [146.83, 220.00, 293.66],
-            [164.81, 246.94, 329.63], [130.81, 196.00, 246.94]
-        ],
-        duracao: 7, onda: 'sine', volumeBase: 0.07
-    }
-};
-
-function pararGerador() {
-    isGeneratedPlaying = false;
-    if (generatedTimer) { clearTimeout(generatedTimer); generatedTimer = null; }
-    generatedNodes.forEach(n => {
-        try { n.stop && n.stop(); } catch(e) {}
-        try { n.disconnect && n.disconnect(); } catch(e) {}
-    });
-    generatedNodes = [];
-}
-
-function tocarAcordeGerado(freqs, duracao, onda, volume) {
-    if (!audioContext) return;
-    const ctx = audioContext;
-    freqs.forEach(freq => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = onda;
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + duracao * 0.3);
-        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + duracao);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + duracao + 0.1);
-        generatedNodes.push(osc, gain);
-    });
-}
-
-function iniciarProgressaoGerada(nomeConfig) {
-    const cfg = PROGRESSOES_GERADAS[nomeConfig];
-    if (!cfg || !audioContext) return;
-    let indice = 0;
-    function passo() {
-        if (!isGeneratedPlaying) return;
-        tocarAcordeGerado(cfg.acordes[indice % cfg.acordes.length], cfg.duracao, cfg.onda, cfg.volumeBase * (localVolumeFactor * 2));
-        indice++;
-        generatedTimer = setTimeout(passo, cfg.duracao * 1000 * 0.85);
-    }
-    passo();
-}
-
-function iniciarRuidoGerado(freqBase, modoOndas) {
-    if (!audioContext) return;
-    const ctx = audioContext;
-    const bufferSize = 2 * ctx.sampleRate;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-    const noise = ctx.createBufferSource();
-    noise.buffer = buffer;
-    noise.loop = true;
-    const filtro = ctx.createBiquadFilter();
-    filtro.type = 'lowpass';
-    filtro.frequency.value = freqBase;
-    const gain = ctx.createGain();
-    gain.gain.value = 0;
-    noise.connect(filtro).connect(gain).connect(ctx.destination);
-    noise.start();
-    gain.gain.linearRampToValueAtTime(0.22 * (localVolumeFactor * 2), ctx.currentTime + 2);
-    generatedNodes.push(noise, filtro, gain);
-
-    if (modoOndas) {
-        let subindo = true;
-        function ondular() {
-            if (!isGeneratedPlaying) return;
-            const alvo = subindo ? freqBase * 1.7 : freqBase * 0.6;
-            filtro.frequency.linearRampToValueAtTime(alvo, ctx.currentTime + 3.5);
-            subindo = !subindo;
-            generatedTimer = setTimeout(ondular, 3500);
-        }
-        ondular();
-    }
-}
-
-function iniciarGerador(tipo) {
-    pararGerador();
-    if (!audioContext) iniciarAudio();
-    if (audioContext && audioContext.state === 'suspended') audioContext.resume();
-    isGeneratedPlaying = true;
-    if (tipo === 'chuva') iniciarRuidoGerado(1100, false);
-    else if (tipo === 'mar') iniciarRuidoGerado(500, true);
-    else iniciarProgressaoGerada(tipo);
-}
 
 let localAudio = null;
 let currentTrackIndexLocal = 0;
@@ -2755,109 +2472,38 @@ function initLocalAudio() {
         });
     }
 }
-
-function popularSeletorPlaylist() {
-    const lista = document.getElementById('playlist-lista');
-    if (!lista) return;
-    lista.innerHTML = playlistLocal.map((faixa, index) => `
-        <button type="button" class="music-track-item" data-index="${index}" onclick="selecionarFaixa(${index}, true)">
-            <span class="music-track-icone">${faixa.icon}</span>
-            <span class="music-track-info">
-                <span class="music-track-titulo">${faixa.titulo}</span>
-                <span class="music-track-subtitulo">${faixa.subtitulo}</span>
-            </span>
-            <span class="music-track-play">▶</span>
-        </button>
-    `).join('');
-}
-
-function atualizarPlaylistVisual() {
-    document.querySelectorAll('.music-track-item').forEach(item => {
-        const idx = parseInt(item.getAttribute('data-index'), 10);
-        item.classList.toggle('ativo', idx === currentTrackIndexLocal);
-        const playIcon = item.querySelector('.music-track-play');
-        if (playIcon) playIcon.innerText = (idx === currentTrackIndexLocal && isLocalPlaying) ? '⏸' : '▶';
-    });
-}
-
-function selecionarFaixa(index, autoPlay = false) {
-    currentTrackIndexLocal = parseInt(index, 10) || 0;
-    loadLocalTrack(currentTrackIndexLocal);
-    if (autoPlay || isLocalPlaying) playLocalMusic();
-}
-
 function loadLocalTrack(index) {
     if (!playlistLocal.length) return;
-    pararGerador();
     if (!localAudio) initLocalAudio();
-    localAudio.pause();
     const track = playlistLocal[index];
     if (!track) return;
-    if (track.tipo === 'arquivo') {
-        localAudio.src = track.path;
-        localAudio.load();
-    } else {
-        localAudio.removeAttribute('src');
-    }
+    localAudio.src = track.path;
+    localAudio.load();
     const musicNameElement = document.getElementById('current-music-name');
-    if (musicNameElement) musicNameElement.innerText = `${track.icon} ${track.titulo} - ${track.subtitulo}`;
-    atualizarPlaylistVisual();
+    if (musicNameElement) musicNameElement.innerText = `🎧 ${track.name}`;
 }
-
 function playLocalMusic() {
     if (!playlistLocal.length) return;
     initLocalAudio();
-    const track = playlistLocal[currentTrackIndexLocal];
-    if (!track) return;
-    if (track.tipo === 'arquivo') {
-        if (!localAudio.src) loadLocalTrack(currentTrackIndexLocal);
-        localAudio.play().catch(e => console.log("Erro ao tocar:", e));
-    } else {
-        localAudio.pause();
-        iniciarGerador(track.gerador);
-    }
+    if (!localAudio.src) loadLocalTrack(currentTrackIndexLocal);
+    localAudio.play().catch(e => console.log("Erro ao tocar:", e));
     isLocalPlaying = true;
-    atualizarPlaylistVisual();
 }
-
-function pauseLocalMusic() {
-    if (localAudio) localAudio.pause();
-    pararGerador();
-    isLocalPlaying = false;
-    atualizarPlaylistVisual();
-}
-
-function stopLocalMusic() {
-    if (localAudio) { localAudio.pause(); localAudio.currentTime = 0; }
-    pararGerador();
-    isLocalPlaying = false;
-    atualizarPlaylistVisual();
-}
-
+function pauseLocalMusic() { if (localAudio) { localAudio.pause(); isLocalPlaying = false; } }
+function stopLocalMusic() { if (localAudio) { localAudio.pause(); localAudio.currentTime = 0; isLocalPlaying = false; } }
 function nextLocalMusic() {
     if (!playlistLocal.length) return;
     currentTrackIndexLocal = (currentTrackIndexLocal + 1) % playlistLocal.length;
     loadLocalTrack(currentTrackIndexLocal);
-    if (isLocalPlaying) playLocalMusic();
+    if (isLocalPlaying) localAudio.play().catch(e => console.log("Erro:", e));
 }
-
 function prevLocalMusic() {
     if (!playlistLocal.length) return;
     currentTrackIndexLocal = (currentTrackIndexLocal - 1 + playlistLocal.length) % playlistLocal.length;
     loadLocalTrack(currentTrackIndexLocal);
-    if (isLocalPlaying) playLocalMusic();
+    if (isLocalPlaying) localAudio.play().catch(e => console.log("Erro:", e));
 }
-
-function setLocalVolume(value) {
-    localVolumeFactor = value / 100;
-    if (localAudio) localAudio.volume = localVolumeFactor;
-    generatedNodes.forEach(n => {
-        if (n instanceof GainNode) {
-            try { n.gain.linearRampToValueAtTime(n.gain.value > 0 ? localVolumeFactor * 0.4 : 0, audioContext.currentTime + 0.3); } catch(e) {}
-        }
-    });
-}
-
+function setLocalVolume(value) { if (localAudio) localAudio.volume = value / 100; }
 function toggleMusicPlayer(event) {
     if (event) event.stopPropagation();
     const player = document.getElementById('music-player');
@@ -2869,9 +2515,9 @@ function initCarrossel() {
     const track = document.getElementById('carousel-track');
     if (!track) return;
     const imagens = [
-        "imagens/logo_ifms-removebg-preview.png",
-        "imagens/image-removebg-preview.png",
-        "imagens/APAE.png"
+        "../site interativo/imagens/logo_ifms-removebg-preview.png",
+        "../site interativo/imagens/image-removebg-preview.png",
+        "../site interativo/imagens/APAE.png"
     ];
     let slidesHTML = '';
     for (let i = 0; i < 4; i++) {
@@ -2885,10 +2531,8 @@ document.addEventListener('DOMContentLoaded', () => {
     iniciarAudio();
     loadUserPreferences();
     initCarrossel();
-    popularSeletorPlaylist();
     if (playlistLocal.length) loadLocalTrack(0);
     carregarProgresso();
-    renderConquistas();
     if (!estadoAtual.pontuacaoTotal) estadoAtual.pontuacaoTotal = 0;
     if (!estadoAtual.nivelAtual) estadoAtual.nivelAtual = 1;
     
