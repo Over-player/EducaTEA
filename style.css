@@ -2485,39 +2485,69 @@ body.espacamento-confortavel { line-height: 1.8; }
 }
 
 /* =======================================================
-   CORREÇÃO DO MENU E LARGURA DOS BOTÕES NO CELULAR
+   CORREÇÃO DEFINITIVA MOBILE - SEM BUGAR OS BOTÕES
    ======================================================= */
 @media (max-width: 768px) {
-    /* 1. Deixa o Player de Música mais estreito */
+    
+    /* 1. Tamanho normal dos botões fechados (Um na esquerda, outro na direita) */
     .music-player {
-        width: 44vw !important; /* Ocupa menos da metade da tela */
+        width: 45vw !important;
         max-width: 180px !important;
         left: 10px !important;
+        right: auto !important;
         bottom: 15px !important;
+        height: 45px !important;
+        z-index: 1500 !important;
     }
 
-    /* 2. Deixa o Conquistas mais estreito e joga pra direita */
     .conquistas-flutuante {
-        width: 44vw !important; /* Ocupa menos da metade da tela */
+        width: 45vw !important;
         max-width: 180px !important;
         right: 10px !important;
         left: auto !important;
         bottom: 15px !important;
+        height: 45px !important;
+        z-index: 1500 !important;
     }
 
-    /* 3. Ajusta o texto de dentro deles para não quebrar a tela */
+    /* Arruma o texto do título para não quebrar a caixinha */
     .music-title {
         font-size: 0.75rem !important;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    
-    .music-icon {
-        font-size: 1rem !important;
+
+    /* 2. QUANDO ABERTOS, ELES OCUPAM A TELA TODA */
+    .music-player:not(.collapsed), 
+    .conquistas-flutuante:not(.collapsed) {
+        width: calc(100vw - 20px) !important; /* Ocupa quase tudo */
+        max-width: 100% !important;
+        left: 10px !important;
+        right: 10px !important;
+        bottom: 15px !important;
+        height: auto !important;
+        max-height: 70vh !important;
+        overflow-y: auto !important; /* Permite rolar as músicas */
     }
 
-    /* 4. Menu de Temas abrindo no centro da tela */
+    /* 3. ESCONDE O OUTRO BOTÃO QUANDO UM ESTIVER ABERTO (Para não bugar) */
+    .music-player:not(.collapsed) ~ .conquistas-flutuante {
+        display: none !important;
+    }
+    
+    .conquistas-flutuante:not(.collapsed) ~ .music-player {
+        display: none !important;
+    }
+
+    /* 4. O BOTÃO DE TEMAS (🎨) */
+    .personalizacao-panel {
+        bottom: 75px !important; 
+        right: 15px !important;
+        z-index: 2000 !important;
+    }
+
+    /* Menu de temas no centro da tela */
     #personalizacao-menu.active {
         display: block !important;
         position: fixed !important;
@@ -2537,10 +2567,4 @@ body.espacamento-confortavel { line-height: 1.8; }
     }
     
     .personalizacao-menu { animation: none !important; }
-
-    /* 5. Sobe o botão roxo (🎨) para não encostar nos botões de baixo */
-    .personalizacao-panel {
-        bottom: 100px !important; 
-        right: 15px !important;
-    }
 }
