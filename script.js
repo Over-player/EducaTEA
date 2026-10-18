@@ -2918,18 +2918,22 @@ function toggleMusicPlayer(event) {
 function initCarrossel() {
     const track = document.getElementById('carousel-track');
     if (!track) return;
+    
+    // 🔧 Caminhos relativos à raiz (corrigido para o GitHub Pages)
     const imagens = [
-        "../imagens/logo_ifms-removebg-preview.png",
-        "../imagens/image-removebg-preview.png",
-        "../imagens/APAE.png"
+        "imagens/logo_ifms-removebg-preview.png",
+        "imagens/image-removebg-preview.png",
+        "imagens/APAE.png"
     ];
+    
     let slidesHTML = '';
     for (let i = 0; i < 4; i++) {
-        imagens.forEach(src => { slidesHTML += `<img src="${src}" alt="Apoiador" class="carousel-img" style="width: 150px; height: auto; margin: 0 10px;">`; });
+        imagens.forEach(src => { 
+            slidesHTML += `<img src="${src}" alt="Apoiador" class="carousel-img" style="width: 150px; height: auto; margin: 0 10px;" onerror="this.style.display='none'">`; 
+        });
     }
     track.innerHTML = slidesHTML;
 }
-
 // ================= INICIALIZAÇÃO =================
 document.addEventListener('DOMContentLoaded', () => {
     iniciarAudio();
