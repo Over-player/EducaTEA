@@ -2919,7 +2919,7 @@ function initCarrossel() {
     const track = document.getElementById('carousel-track');
     if (!track) return;
     
-    // 🔧 Caminhos relativos à raiz (corrigido para o GitHub Pages)
+    // 🔧 Nomes exatos conforme devem estar na pasta
     const imagens = [
         "imagens/logo_ifms-removebg-preview.png",
         "imagens/image-removebg-preview.png",
@@ -2927,9 +2927,16 @@ function initCarrossel() {
     ];
     
     let slidesHTML = '';
+    
+    // Vou repetir as imagens 4 vezes para dar o efeito de rolagem infinita
     for (let i = 0; i < 4; i++) {
         imagens.forEach(src => { 
-            slidesHTML += `<img src="${src}" alt="Apoiador" class="carousel-img" style="width: 150px; height: auto; margin: 0 10px;" onerror="this.style.display='none'">`; 
+            // Adicionado um fundo vermelho e borda para você ver onde a imagem deveria estar
+            slidesHTML += `
+                <div style="background: red; border: 2px solid yellow; width: 180px; height: 100px; display: flex; align-items: center; justify-content: center; margin: 0 10px; flex-shrink: 0;">
+                    <img src="${src}" alt="Apoiador" class="carousel-img" style="width: 100%; height: 100%; object-fit: contain;">
+                </div>
+            `; 
         });
     }
     track.innerHTML = slidesHTML;
