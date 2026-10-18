@@ -440,12 +440,17 @@ button, .btn-acessibilidade, .btn-tema, .btn-fonte, .btn-espacamento, .nav-item,
     }
 
     .personalizacao-menu {
-        width: min(90vw, 320px);
-        max-height: 70vh;
-        overflow-y: auto;
-        right: 0;
-        left: auto;
-        transform: none;
+        position: absolute;
+    top: auto;
+    bottom: 70px; /* Joga para cima */
+    right: 0;
+    width: 320px;
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: var(--shadow-lg);
+    border: 2px solid var(--accent-color);
+    display: none;
     }
 
     .progresso-card { padding: 15px; }
@@ -2480,45 +2485,36 @@ body.espacamento-confortavel { line-height: 1.8; }
 }
 
 /* =======================================================
-   CORREÇÃO: MENU PARA CIMA E BOTÕES SEPARADOS
+   CORREÇÃO FINAL - CELULAR E TABLET
    ======================================================= */
 @media (max-width: 900px) {
-    /* 1. O botão roxo fica um pouco mais alto para não bater no player */
+    /* Sobe o botão roxo para não encostar no player */
     .personalizacao-panel {
         bottom: 100px !important; 
         right: 15px !important;
         top: auto !important;
-        z-index: 10000 !important;
+        z-index: 2000 !important;
     }
 
-    /* 2. O menu abre PARA CIMA */
-    .personalizacao-menu {
+    /* Força o menu a abrir para cima, com rolagem caso seja grande */
+    .personalizacao-menu.active {
+        display: block !important;
         position: absolute !important;
-        bottom: 60px !important; /* Joga o menu para cima do botão */
+        bottom: 60px !important; 
         right: 0 !important; 
         top: auto !important;
         left: auto !important;
-        transform: none !important; /* Remove o centralizador */
+        transform: none !important; 
         
         width: 85vw !important;
         max-width: 320px !important;
-        max-height: 65vh !important; /* Limita a altura para não vazar para o topo */
+        max-height: 65vh !important; 
         overflow-y: auto !important;
         
         box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.3) !important;
-        border: 2px solid var(--accent-color) !important;
-        background: var(--bg-card) !important;
-        border-radius: 20px !important;
-        animation: slideUp 0.3s ease !important;
     }
 
-    /* Animaçãozinha para subir suavemente */
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* 3. Player de Música e Conquistas separados lá embaixo */
+    /* Separação dos botões inferiores */
     .music-player {
         bottom: 15px !important;
         left: 15px !important;
@@ -2536,12 +2532,12 @@ body.espacamento-confortavel { line-height: 1.8; }
         z-index: 1050 !important;
     }
 
-    /* Se a música abrir, as conquistas sobem para não encavalar */
+    /* Se a música for aberta, conquistas sobem */
     .music-player:not(.collapsed) ~ .conquistas-flutuante {
         bottom: 250px !important; 
     }
 
-    /* 4. Espaço no final para o texto não ficar escondido */
+    /* Espaço no final da tela */
     .main-content {
         padding-bottom: 160px !important;
     }
