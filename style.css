@@ -418,12 +418,20 @@ button, .btn-acessibilidade, .btn-tema, .btn-fonte, .btn-espacamento, .nav-item,
 
 
 @media (max-width: 768px) {
+    .gov-header { height: 70px; }
+    .header-container { padding: 0 1rem; }
+    .logo-main { font-size: 1.4rem; }
+    .logo-icon { font-size: 1.8rem; }
+    .logo-subtitle { font-size: 0.6rem; padding: 2px 8px; }
+    .status-container { padding: 4px 12px; gap: 6px; }
+    .status-badge { font-size: 0.7rem; }
+
     .main-content { padding: 1rem; }
     .hero-card h1 { font-size: 1.4rem; }
     .music-player { width: 240px; left: 10px; bottom: 10px; }
     .acessibilidade-bar { gap: 8px; padding: 8px 12px; }
 
-    /* 🔧 Painel de personalização reposicionado */
+    /* 🔧 Painel de personalização no tablet */
     .personalizacao-panel {
         top: auto;
         bottom: 90px;
@@ -439,6 +447,15 @@ button, .btn-acessibilidade, .btn-tema, .btn-fonte, .btn-espacamento, .nav-item,
         left: auto;
         transform: none;
     }
+
+    .progresso-card { padding: 15px; }
+    .progresso-header { flex-direction: column; align-items: stretch; }
+    .progresso-info { justify-content: space-between; }
+    .progresso-nivel, .progresso-pontos { flex: 1; justify-content: center; }
+    .btn-reset-progresso { justify-content: center; }
+    .progresso-bar-container { height: 35px; }
+    .progresso-marcadores { font-size: 0.7rem; gap: 5px; }
+    .progresso-marcador { padding: 2px 8px; }
 }
 
 .personalizacao-panel {
@@ -1954,13 +1971,6 @@ body.espacamento-confortavel { line-height: 1.8; }
     background: rgba(0, 0, 0, 0.05);
     padding: 4px 12px;
     border-radius: 20px;
-}
-
-@media (max-width: 768px) {
-    .progresso-card { padding: 15px; }
-    .progresso-header { flex-direction: column; }
-    .progresso-info { justify-content: space-between; }
-    .progresso-bar-container { height: 35px; }
 }
 
 
