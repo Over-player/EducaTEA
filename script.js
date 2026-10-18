@@ -2869,9 +2869,9 @@ function initCarrossel() {
     const track = document.getElementById('carousel-track');
     if (!track) return;
     const imagens = [
-        ".../imagens/logo_ifms-removebg-preview.png",
-        ".../imagens/image-removebg-preview.png",
-        ".../imagens/APAE.png"
+        "../imagens/logo_ifms-removebg-preview.png",
+        "../imagens/image-removebg-preview.png",
+        "../imagens/APAE.png"
     ];
     let slidesHTML = '';
     for (let i = 0; i < 4; i++) {
