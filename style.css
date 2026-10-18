@@ -2077,3 +2077,270 @@ body.espacamento-confortavel { line-height: 1.8; }
     outline-offset: -2px;
     background: rgba(var(--accent-color-rgb), 0.18) !important;
 }
+
+/* =====================================================================
+   AJUSTES PARA CELULAR
+   Tudo abaixo está dentro de media queries (max-width), então o layout
+   do computador (telas acima de 768px) continua exatamente igual.
+   ===================================================================== */
+
+@media (max-width: 768px) {
+
+    /* ---- Cabeçalho ---- */
+    /* linha colorida animada: fica colada no cabeçalho (acompanha ao rolar) */
+    .gov-header::after {
+        bottom: -5px;
+        height: 5px;
+        background-size: 200% auto;
+        animation: gradientShine 3s linear infinite;
+        will-change: background-position;
+    }
+    .gov-header { margin-bottom: 8px; }
+    .header-container { gap: 8px; }
+    .menu-toggle { margin-right: 0; }
+    .logo-area { flex: 1; min-width: 0; }
+    .logo-wrapper { align-items: center; gap: 6px; }
+    .logo-main { white-space: nowrap; }
+    .top-nav { flex-shrink: 0; }
+    .status-container { white-space: nowrap; }
+
+    /* Sem "pulinho" ao tocar (hover não existe no toque) */
+    .logo-area:hover,
+    .status-container:hover,
+    .card-base:hover,
+    .progresso-card:hover,
+    .btn-acessibilidade:hover,
+    .btn-verificar:hover,
+    .btn-opcao:hover,
+    .btn-opcao-math:hover,
+    .btn-opcao-ciencia:hover,
+    .btn-voltar:hover,
+    .slot-cor:hover,
+    .slot-sombra:hover,
+    .letra-item:hover { transform: none; }
+
+    /* ---- Barra de acessibilidade: grade 2 colunas, botões grandes ---- */
+    .acessibilidade-bar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        width: auto;
+        margin: 8px 12px;
+        padding: 10px;
+        border-radius: 18px;
+    }
+    .acessibilidade-bar .btn-acessibilidade {
+        justify-content: center;
+        min-height: 44px;
+        padding: 8px 10px;
+        font-size: 0.8rem;
+        text-align: center;
+        line-height: 1.2;
+    }
+    #btn-reiniciar { grid-column: 1 / -1; }
+
+    /* ---- Conteúdo principal ---- */
+    .main-content {
+        /* espaço no fim para o player de música e o botão 🎨 não cobrirem o conteúdo */
+        padding-bottom: 130px;
+    }
+    .hero-card { padding: 1.25rem; margin-bottom: 1.25rem; border-radius: 20px; }
+    .grid-info { grid-template-columns: 1fr; gap: 1rem; }
+    .card-base { border-radius: 20px; }
+    .card-base p { line-height: 1.65; overflow-wrap: anywhere; }
+    #category-name { font-size: 1.4rem; margin-bottom: 14px !important; }
+
+    /* ---- Painel de progresso ---- */
+    .progresso-info { gap: 8px; flex-wrap: nowrap; }
+    .progresso-nivel, .progresso-pontos {
+        padding: 6px 10px;
+        gap: 6px;
+        font-size: 0.8rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+    }
+    .progresso-nivel span:last-child,
+    .progresso-pontos span:last-child { font-size: 1.1rem; }
+    #nivel-atual { padding: 3px 12px; font-size: 1rem; }
+    #pontuacao-total { font-size: 1.15rem; }
+    .btn-reset-progresso { width: 100%; min-height: 44px; font-size: 0.9rem; }
+    .progresso-card > .btn-reset-progresso { margin-top: 8px; }
+    .progresso-marcadores { flex-wrap: wrap; justify-content: center; gap: 6px; }
+
+    /* ---- Jogos ---- */
+    .jogo-wrapper {
+        padding: 1rem 0.75rem !important;
+        border-radius: 20px;
+    }
+    .jogo-wrapper h2 { font-size: 1.3rem; line-height: 1.3; }
+    .jogo-wrapper h3 { font-size: 1.1rem; line-height: 1.3; }
+    .jogo-wrapper p  { overflow-wrap: anywhere; }
+
+    .slots-container, .letras-disponiveis { gap: 8px; margin: 14px 0; }
+
+    /* Botões de resposta: tamanho confortável e empilham quando preciso */
+    .btn-verificar, .btn-voltar, .btn-opcao, .btn-opcao-math, .btn-opcao-ciencia {
+        min-height: 46px;
+        max-width: 100%;
+        font-size: 1rem;
+        padding: 10px 18px;
+        margin: 5px 4px;
+    }
+    .jogo-wrapper button[style*="padding: 15px 25px"],
+    .jogo-wrapper button[style*="padding: 20px 30px"],
+    .jogo-wrapper button[style*="padding: 15px 30px"] {
+        padding: 12px 18px !important;
+        font-size: 1.1rem !important;
+    }
+
+    /* Campos de texto com largura fixa passam a caber na tela */
+    .jogo-wrapper input[style*="width: 250px"],
+    .jogo-wrapper input[style*="width: 200px"],
+    .jogo-wrapper input[style*="width: 120px"] {
+        width: 100% !important;
+        max-width: 280px;
+        margin: 14px 0 !important;
+    }
+
+    /* Textos/emojis gigantes dos jogos */
+    .jogo-wrapper [style*="font-size: 6rem"] { font-size: 4rem !important; }
+    .jogo-wrapper [style*="font-size: 5rem"] { font-size: 3.5rem !important; margin: 14px !important; }
+    .jogo-wrapper [style*="font-size: 4rem"] { font-size: 3rem !important; }
+    .jogo-wrapper [style*="font-size: 3.5rem"] { font-size: 2.6rem !important; }
+    .jogo-wrapper [style*="font-size: 3rem; margin: 20px"] { font-size: 2.4rem !important; margin: 12px !important; }
+
+    /* Caixas largas (Rotina, Cores) não ultrapassam a tela */
+    .slot-rotina { width: 100% !important; max-width: 320px; margin: 5px auto !important; }
+    .slot-cor { width: calc(33.333% - 12px) !important; min-width: 88px; flex: 0 0 auto; }
+
+    /* Linhas de botões/itens dos jogos quebram de linha em vez de espremer */
+    .jogo-wrapper div[style*="display: flex"] { flex-wrap: wrap !important; }
+    .jogo-wrapper div[style*="display: flex"] > button { flex: 0 1 auto; }
+
+    /* ---- Caça-Palavras: a grade se ajusta à largura da tela ---- */
+    #grid-caca {
+        grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
+        gap: 3px !important;
+        width: 100%;
+        margin: 14px 0 !important;
+    }
+    #grid-caca[style*="repeat(12,"] { grid-template-columns: repeat(12, minmax(0, 1fr)) !important; gap: 2px !important; }
+    #grid-caca[style*="repeat(14,"] { grid-template-columns: repeat(14, minmax(0, 1fr)) !important; gap: 2px !important; }
+    #grid-caca .letra-caca {
+        width: auto !important;
+        height: auto !important;
+        aspect-ratio: 1 / 1;
+        font-size: 0.95rem !important;
+        border-radius: 6px !important;
+        touch-action: manipulation;
+    }
+    #grid-caca[style*="repeat(12,"] .letra-caca { font-size: 0.85rem !important; }
+    #grid-caca[style*="repeat(14,"] .letra-caca { font-size: 0.75rem !important; border-radius: 4px !important; }
+
+    /* Letras da palavra oculta em linha, sem estourar */
+    .letra-oculta { width: 42px !important; height: 46px !important; font-size: 1.3rem !important; }
+
+    /* ---- Janela de resultado (modal) ---- */
+    .modal-overlay { padding: 16px; }
+    .modal-content {
+        width: 100%;
+        max-width: 360px;
+        padding: 1.25rem;
+        border-radius: 24px;
+        max-height: 90dvh;
+        overflow-y: auto;
+    }
+
+    /* ---- Menu 🎨 (personalização): abre acima do botão, dentro da tela ---- */
+    .personalizacao-menu {
+        position: fixed;
+        top: auto;
+        bottom: 140px;
+        right: 10px;
+        left: auto;
+        width: min(92vw, 340px);
+        max-height: calc(100dvh - 230px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 16px;
+        z-index: 1700;
+    }
+    .btn-personalizar { width: 52px; height: 52px; }
+    .btn-tema, .btn-fonte, .btn-espacamento { min-height: 44px; }
+    .fonte-tamanho .btn-fonte, .espacamento-opcoes .btn-espacamento { flex: 1; }
+
+    /* ---- Player de música: menor e sem cobrir o botão 🎨 ---- */
+    .music-player {
+        width: min(240px, calc(100vw - 84px));
+        left: 10px;
+        bottom: 10px;
+        border-radius: 16px;
+    }
+    .music-player-header { padding: 8px 12px; border-radius: 16px 16px 0 0; }
+    .music-player.collapsed { width: auto; min-width: 120px; }
+    .music-player.collapsed .music-player-header { border-radius: 16px; }
+    .music-btn { width: 40px; height: 40px; }
+    .music-controls { gap: 8px; }
+    .music-volume input { height: 24px; }
+
+    /* ---- Apoiadores ---- */
+    .carousel-img { width: 130px; height: 72px; }
+    .carousel-track { gap: 24px; }
+    .apoiadores-titulo { letter-spacing: 2px; }
+}
+
+@media (max-width: 480px) {
+    .logo-main { font-size: 1.2rem; }
+    .logo-icon { font-size: 1.5rem; }
+
+    /* Cabeçalho mais enxuto: mantém só o ícone 🌈 do selo */
+    .status-badge { display: none; }
+    .status-container { padding: 6px 10px; }
+
+    .acessibilidade-bar { margin: 6px 8px; padding: 8px; gap: 6px; }
+    .acessibilidade-bar .btn-acessibilidade { font-size: 0.75rem; padding: 6px 6px; }
+
+    .main-content { padding: 0.75rem 0.6rem 130px; }
+    .hero-card h1 { font-size: 1.15rem; }
+    .jogo-wrapper { padding: 0.85rem 0.5rem !important; }
+
+    .progresso-card { padding: 12px; border-radius: 16px; }
+    .progresso-bar-container { height: 30px; }
+    .progresso-marcador { font-size: 0.68rem; }
+    .progresso-marcador:nth-child(2) { display: none; }
+
+    .slot-cor { width: calc(33.333% - 8px) !important; min-width: 84px; }
+}
+
+@media (max-width: 360px) {
+    .logo-subtitle { display: none; }
+    .logo-main { font-size: 1.1rem; }
+    .menu-toggle { width: 40px; height: 40px; min-width: 40px; }
+
+    .progresso-info { flex-direction: column; align-items: stretch; }
+    .progresso-nivel, .progresso-pontos { width: 100%; flex: none; }
+
+    .btn-verificar, .btn-voltar, .btn-opcao, .btn-opcao-math, .btn-opcao-ciencia {
+        font-size: 0.9rem;
+        padding: 10px 12px;
+    }
+    #grid-caca[style*="repeat(14,"] .letra-caca { font-size: 0.68rem !important; }
+}
+
+/* Celular deitado (paisagem): cabeçalho e barra ocupam menos altura */
+@media (max-width: 900px) and (max-height: 480px) and (orientation: landscape) {
+    .acessibilidade-bar { display: flex; flex-wrap: wrap; margin: 6px auto; }
+    .acessibilidade-bar .btn-acessibilidade { min-height: 36px; }
+    #btn-reiniciar { grid-column: auto; }
+    .personalizacao-menu { bottom: 70px; max-height: calc(100dvh - 90px); }
+    .music-player { width: 220px; }
+    .modal-content { max-height: 92dvh; overflow-y: auto; }
+}
+
+/* Cabeçalho (com a linha colorida) fica fixo no topo ao rolar no celular/tablet.
+   O body com overflow próprio impedia o "sticky" de funcionar. */
+@media (max-width: 900px) {
+    html { overflow-x: hidden; overflow-y: auto; }
+    body { overflow: visible; }
+}
