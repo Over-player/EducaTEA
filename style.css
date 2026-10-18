@@ -2485,10 +2485,39 @@ body.espacamento-confortavel { line-height: 1.8; }
 }
 
 /* =======================================================
-   CORREÇÃO DO MENU DE TEMAS NO CELULAR
+   CORREÇÃO DO MENU E LARGURA DOS BOTÕES NO CELULAR
    ======================================================= */
 @media (max-width: 768px) {
-    /* O menu de temas abre no meio da tela, escurecendo o fundo */
+    /* 1. Deixa o Player de Música mais estreito */
+    .music-player {
+        width: 44vw !important; /* Ocupa menos da metade da tela */
+        max-width: 180px !important;
+        left: 10px !important;
+        bottom: 15px !important;
+    }
+
+    /* 2. Deixa o Conquistas mais estreito e joga pra direita */
+    .conquistas-flutuante {
+        width: 44vw !important; /* Ocupa menos da metade da tela */
+        max-width: 180px !important;
+        right: 10px !important;
+        left: auto !important;
+        bottom: 15px !important;
+    }
+
+    /* 3. Ajusta o texto de dentro deles para não quebrar a tela */
+    .music-title {
+        font-size: 0.75rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .music-icon {
+        font-size: 1rem !important;
+    }
+
+    /* 4. Menu de Temas abrindo no centro da tela */
     #personalizacao-menu.active {
         display: block !important;
         position: fixed !important;
@@ -2509,7 +2538,7 @@ body.espacamento-confortavel { line-height: 1.8; }
     
     .personalizacao-menu { animation: none !important; }
 
-    /* Posiciona o botão roxo (🎨) um pouco mais para cima para não sobrepor a música */
+    /* 5. Sobe o botão roxo (🎨) para não encostar nos botões de baixo */
     .personalizacao-panel {
         bottom: 100px !important; 
         right: 15px !important;
