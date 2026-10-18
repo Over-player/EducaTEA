@@ -2478,3 +2478,57 @@ body.espacamento-confortavel { line-height: 1.8; }
     .conquistas-flutuante { right: 10px; }
     .btn-abrir-conquistas { right: 10px; bottom: 10px; }
 }
+
+/* =======================================================
+   CORREÇÕES EXCLUSIVAS PARA CELULAR (Telas até 768px)
+   ======================================================= */
+@media (max-width: 768px) {
+    /* 1. Menu de Temas: Faz ele abrir centralizado e não sair da tela */
+    .personalizacao-panel {
+        position: fixed;
+        bottom: 20px; 
+        right: 20px;
+        z-index: 10000; /* Fica por cima de tudo */
+    }
+
+    .personalizacao-menu {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90vw !important; /* Ocupa 90% da largura do celular */
+        max-width: 360px !important;
+        max-height: 80vh !important; /* Permite rolar se for muito grande */
+        overflow-y: auto !important;
+        margin: 0 !important;
+        padding: 20px !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+        animation: none !important; /* Remove a animação que empurrava pra fora */
+    }
+
+    /* 2. Separação do Player de Música e Conquistas */
+    .music-player {
+        bottom: 15px;
+        left: 15px;
+        width: calc(100vw - 90px); /* Deixa um espaço na direita para não bater */
+        max-width: 300px;
+    }
+
+    .conquistas-flutuante {
+        bottom: 15px;
+        right: 15px;
+        left: auto;
+        width: calc(100vw - 90px);
+        max-width: 300px;
+    }
+
+    /* Se os dois estiverem abertos, o de música sobe um pouco para não encavalar */
+    .music-player:not(.collapsed) ~ .conquistas-flutuante {
+        bottom: 200px; 
+    }
+    
+    /* 3. Espaço extra no final da página para os botões não cobrirem o texto */
+    .main-content {
+        padding-bottom: 150px !important;
+    }
+}
