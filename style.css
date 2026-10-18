@@ -2255,16 +2255,18 @@ body.espacamento-confortavel { line-height: 1.8; }
     .personalizacao-menu {
         position: fixed;
         top: auto;
-        bottom: 140px;
+        bottom: 74px;
         right: 10px;
         left: auto;
         width: min(92vw, 340px);
-        max-height: calc(100dvh - 230px);
+        max-height: calc(100dvh - 160px);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         padding: 16px;
         z-index: 1700;
     }
+    /* botão 🎨 na mesma linha do player de música, sem cobrir os botões do jogo */
+    .personalizacao-panel { top: auto; bottom: 10px; right: 10px; }
     .btn-personalizar { width: 52px; height: 52px; }
     .btn-tema, .btn-fonte, .btn-espacamento { min-height: 44px; }
     .fonte-tamanho .btn-fonte, .espacamento-opcoes .btn-espacamento { flex: 1; }
@@ -2332,7 +2334,8 @@ body.espacamento-confortavel { line-height: 1.8; }
     .acessibilidade-bar { display: flex; flex-wrap: wrap; margin: 6px auto; }
     .acessibilidade-bar .btn-acessibilidade { min-height: 36px; }
     #btn-reiniciar { grid-column: auto; }
-    .personalizacao-menu { bottom: 70px; max-height: calc(100dvh - 90px); }
+    .personalizacao-panel { bottom: 8px; }
+    .personalizacao-menu { bottom: 68px; max-height: calc(100dvh - 80px); }
     .music-player { width: 220px; }
     .modal-content { max-height: 92dvh; overflow-y: auto; }
 }
@@ -2342,4 +2345,14 @@ body.espacamento-confortavel { line-height: 1.8; }
 @media (max-width: 900px) {
     html { overflow-x: hidden; overflow-y: auto; }
     body { overflow: visible; }
+}
+
+/* Caça-Palavras: o dedo arrasta as letras em vez de rolar a página */
+@media (pointer: coarse) {
+    #grid-caca {
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
 }
