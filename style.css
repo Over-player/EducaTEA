@@ -27,6 +27,12 @@
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
     --transition: all 0.2s ease;
     --accent-color-rgb: 59, 130, 246; 
+    /* feedback de acerto/erro (os temas para daltônicos redefinem) */
+    --feedback-ok: #2ecc71;
+    --feedback-ok-2: #27ae60;
+    --feedback-bad: #ff8b6b;
+    --feedback-bad-2: #e8624a;
+    --on-accent: #ffffff;
 }
 
 [data-theme="dark"] {
@@ -1677,7 +1683,7 @@ body.espacamento-confortavel { line-height: 1.8; }
 
 .slot-sombra[data-completado="true"] {
     cursor: default;
-    box-shadow: 0 0 15px #2ecc71;
+    box-shadow: 0 0 15px var(--feedback-ok);
 }
 
 .sombra-imagem {
@@ -2219,11 +2225,11 @@ body.espacamento-confortavel { line-height: 1.8; }
 }
 
 .toast-sucesso {
-    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    background: linear-gradient(135deg, var(--feedback-ok), var(--feedback-ok-2));
 }
 
 .toast-erro {
-    background: linear-gradient(135deg, #ff8b6b, #e8624a);
+    background: linear-gradient(135deg, var(--feedback-bad), var(--feedback-bad-2));
 }
 
 @media (max-width: 600px) {
@@ -2548,7 +2554,8 @@ body.espacamento-confortavel { line-height: 1.8; }
     }
 
     /* Menu de temas no centro da tela */
-    #personalizacao-menu.active {
+    #personalizacao-menu.active,
+    #daltonismo-menu.active {
         display: block !important;
         position: fixed !important;
         top: 50% !important;
@@ -2568,3 +2575,365 @@ body.espacamento-confortavel { line-height: 1.8; }
     
     .personalizacao-menu { animation: none !important; }
 }
+
+/* =====================================================================
+   🎨 TEMAS PARA DALTÔNICOS (Protanopia, Deuteranopia e Tritanopia)
+   Paletas escolhidas para não depender de vermelho×verde (prot/deut) nem
+   de azul×amarelo (trit). Acerto e erro também mudam de cor em cada tema.
+   ===================================================================== */
+[data-theme="prot-claro"] {
+    --bg-primary: #F3F8FD;
+    --bg-secondary: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --bg-hover: #DDEAF7;
+    --bg-sidebar: #F3F8FD;
+    --text-primary: #14263A;
+    --text-secondary: #34506E;
+    --text-dim: #566F8C;
+    --accent-color: #0072B2;
+    --accent-light: #56B4E9;
+    --accent-dark: #005A8D;
+    --primary-blue: #0072B2;
+    --border-color: #BFD6EA;
+    --success: #0072B2;
+    --warning: #E69F00;
+    --error: #C2410C;
+    --feedback-ok: #0072B2;
+    --feedback-ok-2: #005A8D;
+    --feedback-bad: #C2410C;
+    --feedback-bad-2: #9A3412;
+    --on-accent: #FFFFFF;
+    --accent-color-rgb: 0, 114, 178;
+}
+[data-theme="prot-escuro"] {
+    --bg-primary: #0A1628;
+    --bg-secondary: #12233B;
+    --bg-card: #12233B;
+    --bg-hover: #1D3453;
+    --bg-sidebar: #0A1628;
+    --text-primary: #EAF3FC;
+    --text-secondary: #C2D4E8;
+    --text-dim: #8CA5C2;
+    --accent-color: #56B4E9;
+    --accent-light: #8FCDF1;
+    --accent-dark: #2B8FC9;
+    --primary-blue: #56B4E9;
+    --border-color: #34527A;
+    --success: #2477B0;
+    --warning: #F0C24B;
+    --error: #B85615;
+    --feedback-ok: #2477B0;
+    --feedback-ok-2: #1B6496;
+    --feedback-bad: #B85615;
+    --feedback-bad-2: #97440F;
+    --on-accent: #0A1628;
+    --accent-color-rgb: 86, 180, 233;
+}
+[data-theme="prot-suave"] {
+    --bg-primary: #FBF6EA;
+    --bg-secondary: #FFFDF7;
+    --bg-card: #FFFDF7;
+    --bg-hover: #F3E8CD;
+    --bg-sidebar: #FBF6EA;
+    --text-primary: #2F2A22;
+    --text-secondary: #5A5040;
+    --text-dim: #7E7360;
+    --accent-color: #2F6DA8;
+    --accent-light: #6A9FD0;
+    --accent-dark: #1F5385;
+    --primary-blue: #2F6DA8;
+    --border-color: #E9DBB8;
+    --success: #2F6DA8;
+    --warning: #D99A00;
+    --error: #B8530A;
+    --feedback-ok: #2F6DA8;
+    --feedback-ok-2: #1F5385;
+    --feedback-bad: #B8530A;
+    --feedback-bad-2: #8F3F07;
+    --on-accent: #FFFFFF;
+    --accent-color-rgb: 47, 109, 168;
+}
+[data-theme="prot-contraste"] {
+    --bg-primary: #00091A;
+    --bg-secondary: #0A1530;
+    --bg-card: #0A1530;
+    --bg-hover: #14264D;
+    --bg-sidebar: #00091A;
+    --text-primary: #FFFFFF;
+    --text-secondary: #FFE98A;
+    --text-dim: #B7C7E3;
+    --accent-color: #FFD60A;
+    --accent-light: #FFEE7A;
+    --accent-dark: #E6B800;
+    --primary-blue: #FFD60A;
+    --border-color: #5DADFF;
+    --success: #1565C0;
+    --warning: #FFD60A;
+    --error: #C43E00;
+    --feedback-ok: #1565C0;
+    --feedback-ok-2: #0D47A1;
+    --feedback-bad: #C43E00;
+    --feedback-bad-2: #9C3000;
+    --on-accent: #00091A;
+    --accent-color-rgb: 255, 214, 10;
+}
+[data-theme="deut-claro"] {
+    --bg-primary: #F6F9FC;
+    --bg-secondary: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --bg-hover: #E3ECF5;
+    --bg-sidebar: #F6F9FC;
+    --text-primary: #1A2433;
+    --text-secondary: #3C4F66;
+    --text-dim: #5E7089;
+    --accent-color: #1F6FB5;
+    --accent-light: #5AA2DB;
+    --accent-dark: #0F5594;
+    --primary-blue: #1F6FB5;
+    --border-color: #C9D8E8;
+    --success: #1F6FB5;
+    --warning: #E69F00;
+    --error: #C75000;
+    --feedback-ok: #1F6FB5;
+    --feedback-ok-2: #0F5594;
+    --feedback-bad: #C75000;
+    --feedback-bad-2: #9C3D00;
+    --on-accent: #FFFFFF;
+    --accent-color-rgb: 31, 111, 181;
+}
+[data-theme="deut-escuro"] {
+    --bg-primary: #14161C;
+    --bg-secondary: #1F232C;
+    --bg-card: #1F232C;
+    --bg-hover: #2C323E;
+    --bg-sidebar: #14161C;
+    --text-primary: #F4F4F6;
+    --text-secondary: #D2D5DC;
+    --text-dim: #9AA1AF;
+    --accent-color: #F2A93B;
+    --accent-light: #F8C877;
+    --accent-dark: #D18A1E;
+    --primary-blue: #F2A93B;
+    --border-color: #4A5262;
+    --success: #2F78BA;
+    --warning: #F2A93B;
+    --error: #B05810;
+    --feedback-ok: #2F78BA;
+    --feedback-ok-2: #235F95;
+    --feedback-bad: #B05810;
+    --feedback-bad-2: #964A0B;
+    --on-accent: #14161C;
+    --accent-color-rgb: 242, 169, 59;
+}
+[data-theme="deut-suave"] {
+    --bg-primary: #FFF9F0;
+    --bg-secondary: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --bg-hover: #F6E9D6;
+    --bg-sidebar: #FFF9F0;
+    --text-primary: #2A2632;
+    --text-secondary: #554E63;
+    --text-dim: #7B7389;
+    --accent-color: #3D5A9E;
+    --accent-light: #7790CC;
+    --accent-dark: #2B427A;
+    --primary-blue: #3D5A9E;
+    --border-color: #EADCC6;
+    --success: #3D5A9E;
+    --warning: #D99A00;
+    --error: #B5560B;
+    --feedback-ok: #3D5A9E;
+    --feedback-ok-2: #2B427A;
+    --feedback-bad: #B5560B;
+    --feedback-bad-2: #8C4108;
+    --on-accent: #FFFFFF;
+    --accent-color-rgb: 61, 90, 158;
+}
+[data-theme="deut-contraste"] {
+    --bg-primary: #000000;
+    --bg-secondary: #111111;
+    --bg-card: #111111;
+    --bg-hover: #222222;
+    --bg-sidebar: #000000;
+    --text-primary: #FFFFFF;
+    --text-secondary: #FFC773;
+    --text-dim: #CFCFCF;
+    --accent-color: #FFA500;
+    --accent-light: #FFD08A;
+    --accent-dark: #E08A00;
+    --primary-blue: #FFA500;
+    --border-color: #FFFFFF;
+    --success: #1565C0;
+    --warning: #FFA500;
+    --error: #C43E00;
+    --feedback-ok: #1565C0;
+    --feedback-ok-2: #0D47A1;
+    --feedback-bad: #C43E00;
+    --feedback-bad-2: #9C3000;
+    --on-accent: #000000;
+    --accent-color-rgb: 255, 165, 0;
+}
+[data-theme="trit-claro"] {
+    --bg-primary: #FEF5F7;
+    --bg-secondary: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --bg-hover: #F9E1E8;
+    --bg-sidebar: #FEF5F7;
+    --text-primary: #2E1A22;
+    --text-secondary: #5C3A47;
+    --text-dim: #82606D;
+    --accent-color: #C2185B;
+    --accent-light: #E4608E;
+    --accent-dark: #96124A;
+    --primary-blue: #C2185B;
+    --border-color: #EFC7D3;
+    --success: #00796B;
+    --warning: #C2185B;
+    --error: #C62828;
+    --feedback-ok: #00796B;
+    --feedback-ok-2: #00574B;
+    --feedback-bad: #C62828;
+    --feedback-bad-2: #8E1B1B;
+    --on-accent: #FFFFFF;
+    --accent-color-rgb: 194, 24, 91;
+}
+[data-theme="trit-escuro"] {
+    --bg-primary: #1B0F15;
+    --bg-secondary: #2A1720;
+    --bg-card: #2A1720;
+    --bg-hover: #3E2330;
+    --bg-sidebar: #1B0F15;
+    --text-primary: #FCEFF3;
+    --text-secondary: #E8C7D2;
+    --text-dim: #B58C9B;
+    --accent-color: #FF7C98;
+    --accent-light: #FFA6BA;
+    --accent-dark: #E0446A;
+    --primary-blue: #FF7C98;
+    --border-color: #6B3A4D;
+    --success: #007C6F;
+    --warning: #FF7C98;
+    --error: #D32F2F;
+    --feedback-ok: #007C6F;
+    --feedback-ok-2: #00605A;
+    --feedback-bad: #D32F2F;
+    --feedback-bad-2: #B71C1C;
+    --on-accent: #1B0F15;
+    --accent-color-rgb: 255, 124, 152;
+}
+[data-theme="trit-suave"] {
+    --bg-primary: #EDF8F6;
+    --bg-secondary: #F8FDFC;
+    --bg-card: #F8FDFC;
+    --bg-hover: #D5EEEA;
+    --bg-sidebar: #EDF8F6;
+    --text-primary: #17302D;
+    --text-secondary: #35615C;
+    --text-dim: #5E8782;
+    --accent-color: #C23F33;
+    --accent-light: #EE7E72;
+    --accent-dark: #A83428;
+    --primary-blue: #C23F33;
+    --border-color: #BFE2DC;
+    --success: #00796B;
+    --warning: #C2185B;
+    --error: #C0392B;
+    --feedback-ok: #00796B;
+    --feedback-ok-2: #00574B;
+    --feedback-bad: #C0392B;
+    --feedback-bad-2: #922B21;
+    --on-accent: #FFFFFF;
+    --accent-color-rgb: 194, 63, 51;
+}
+[data-theme="trit-contraste"] {
+    --bg-primary: #000000;
+    --bg-secondary: #120A0A;
+    --bg-card: #120A0A;
+    --bg-hover: #241313;
+    --bg-sidebar: #000000;
+    --text-primary: #FFFFFF;
+    --text-secondary: #9FFFF0;
+    --text-dim: #D6D6D6;
+    --accent-color: #FF4D6D;
+    --accent-light: #FF8FA3;
+    --accent-dark: #E0204A;
+    --primary-blue: #FF4D6D;
+    --border-color: #5CF2DC;
+    --success: #007A6E;
+    --warning: #FF4D6D;
+    --error: #D32F2F;
+    --feedback-ok: #007A6E;
+    --feedback-ok-2: #005F55;
+    --feedback-bad: #D32F2F;
+    --feedback-bad-2: #B71C1C;
+    --on-accent: #000000;
+    --accent-color-rgb: 255, 77, 109;
+}
+[data-theme="prot-claro"] .btn-tema.active,
+[data-theme="prot-escuro"] .btn-tema.active,
+[data-theme="prot-suave"] .btn-tema.active,
+[data-theme="prot-contraste"] .btn-tema.active,
+[data-theme="deut-claro"] .btn-tema.active,
+[data-theme="deut-escuro"] .btn-tema.active,
+[data-theme="deut-suave"] .btn-tema.active,
+[data-theme="deut-contraste"] .btn-tema.active,
+[data-theme="trit-claro"] .btn-tema.active,
+[data-theme="trit-escuro"] .btn-tema.active,
+[data-theme="trit-suave"] .btn-tema.active,
+[data-theme="trit-contraste"] .btn-tema.active,
+[data-theme^="prot-"] .btn-fonte.active, [data-theme^="deut-"] .btn-fonte.active, [data-theme^="trit-"] .btn-fonte.active,
+[data-theme^="prot-"] .btn-espacamento.active, [data-theme^="deut-"] .btn-espacamento.active, [data-theme^="trit-"] .btn-espacamento.active,
+[data-theme^="prot-"] .btn-personalizar, [data-theme^="deut-"] .btn-personalizar, [data-theme^="trit-"] .btn-personalizar {
+    color: var(--on-accent);
+}
+
+/* ----- Subpainel de temas para daltônicos (mesmo tamanho do painel de temas) ----- */
+.daltonismo-topo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.daltonismo-topo h3 { margin: 0; flex: 1; text-align: left; }
+.btn-voltar-temas {
+    flex: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-color);
+    background: var(--bg-primary);
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    line-height: 1;
+}
+.btn-voltar-temas:hover { background: var(--accent-color); color: var(--on-accent, #fff); }
+.grupo-daltonismo { margin-bottom: 14px; }
+.grupo-daltonismo label { margin-bottom: 2px !important; }
+.grupo-daltonismo small {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    line-height: 1.3;
+}
+.btn-tema-cvd {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+    padding: 8px 10px;
+}
+.tema-swatch {
+    flex: none;
+    display: inline-flex;
+    width: 34px;
+    height: 20px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(128,128,128,.6);
+}
+.tema-swatch i { flex: 1; background: var(--c); }
+.tema-nome { line-height: 1.15; font-size: 0.75rem; }
+.personalizacao-menu.daltonismo-menu { overflow-y: auto; }

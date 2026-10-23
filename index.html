@@ -53,6 +53,7 @@
                 <button class="btn-tema" data-tema="roxo" onclick="applyTheme('roxo')">💜 Lavanda</button>
                 <button class="btn-tema" data-tema="oceano" onclick="applyTheme('oceano')">🌊 Oceano</button>
                 <button class="btn-tema" data-tema="sunset" onclick="applyTheme('sunset')">🌅 Pôr do Sol</button>
+                <button class="btn-tema" id="btn-abrir-daltonismo" onclick="abrirTemasDaltonismo()" aria-controls="daltonismo-menu">🌈 Temas para Daltônicos ›</button>
             </div>
         </div>
         
@@ -80,6 +81,84 @@
             </button>
         </div>
     </div>
+
+    <!-- SUBPAINEL: TEMAS PARA DALTÔNICOS (abre no lugar do painel de temas, mesmo tamanho) -->
+    <div id="daltonismo-menu" class="personalizacao-menu daltonismo-menu" role="dialog" aria-label="Temas para daltônicos">
+        <div class="daltonismo-topo">
+            <button class="btn-voltar-temas" onclick="fecharTemasDaltonismo()" aria-label="Voltar para os temas" title="Voltar">←</button>
+            <h3>🌈 Temas para Daltônicos</h3>
+        </div>
+
+            <div class="opcao-personalizacao grupo-daltonismo">
+                <label>🔴 Protanopia</label>
+                <small>Dificuldade com vermelho. Usa azul, amarelo e laranja.</small>
+                <div class="temas-grid">
+                    <button class="btn-tema btn-tema-cvd" data-tema="prot-claro" onclick="applyTheme('prot-claro')" title="Azul & Âmbar">
+                        <span class="tema-swatch" aria-hidden="true"><i style="--c:#F3F8FD"></i><i style="--c:#0072B2"></i><i style="--c:#C2410C"></i></span>
+                        <span class="tema-nome">Azul & Âmbar</span>
+                    </button>
+                    <button class="btn-tema btn-tema-cvd" data-tema="prot-escuro" onclick="applyTheme('prot-escuro')" title="Noite Azul">
+                        <span class="tema-swatch" aria-hidden="true"><i style="--c:#0A1628"></i><i style="--c:#56B4E9"></i><i style="--c:#B85615"></i></span>
+                        <span class="tema-nome">Noite Azul</span>
+                    </button>
+                    <button class="btn-tema btn-tema-cvd" data-tema="prot-suave" onclick="applyTheme('prot-suave')" title="Areia & Céu">
+                        <span class="tema-swatch" aria-hidden="true"><i style="--c:#FBF6EA"></i><i style="--c:#2F6DA8"></i><i style="--c:#B8530A"></i></span>
+                        <span class="tema-nome">Areia & Céu</span>
+                    </button>
+                    <button class="btn-tema btn-tema-cvd" data-tema="prot-contraste" onclick="applyTheme('prot-contraste')" title="Contraste Amarelo">
+                        <span class="tema-swatch" aria-hidden="true"><i style="--c:#00091A"></i><i style="--c:#FFD60A"></i><i style="--c:#C43E00"></i></span>
+                        <span class="tema-nome">Contraste Amarelo</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="opcao-personalizacao grupo-daltonismo">
+                <label>🟢 Deuteranopia</label>
+                <small>Dificuldade com verde. Usa azul, âmbar e laranja.</small>
+                <div class="temas-grid">
+                    <button class="btn-tema btn-tema-cvd" data-tema="deut-claro" onclick="applyTheme('deut-claro')" title="Azul & Laranja">
+                        <span class="tema-swatch" aria-hidden="true"><i style="--c:#F6F9FC"></i><i style="--c:#1F6FB5"></i><i style="--c:#C75000"></i></span>
+                        <span class="tema-nome">Azul & Laranja</span>
+                    </button>
+                    <button class="btn-tema btn-tema-cvd" data-tema="deut-escuro" onclick="applyTheme('deut-escuro')" title="Grafite & Âmbar">
+                        <span class="tema-swatch" aria-hidden="true"><i style="--c:#14161C"></i><i style="--c:#F2A93B"></i><i style="--c:#B05810"></i></span>
+                        <span class="tema-nome">Grafite & Âmbar</span>
+                    </button>
+                    <button class="btn-tema btn-tema-cvd" data-tema="deut-suave" onclick="applyTheme('deut-suave')" title="Creme & Índigo">
+                        <span class="tema-swatch" aria-hidden="true"><i style="--c:#FFF9F0"></i><i style="--c:#3D5A9E"></i><i style="--c:#B5560B"></i></span>
+                        <span class="tema-nome">Creme & Índigo</span>
+                    </button>
+                    <button class="btn-tema btn-tema-cvd" data-tema="deut-contraste" onclick="applyTheme('deut-contraste')" title="Contraste Laranja">
+                        <span class="tema-swatch" aria-hidden="true"><i style="--c:#000000"></i><i style="--c:#FFA500"></i><i style="--c:#C43E00"></i></span>
+                        <span class="tema-nome">Contraste Laranja</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="opcao-personalizacao grupo-daltonismo">
+                <label>🔵 Tritanopia</label>
+                <small>Dificuldade com azul e amarelo. Usa rosa, vermelho e turquesa.</small>
+                <div class="temas-grid">
+                    <button class="btn-tema btn-tema-cvd" data-tema="trit-claro" onclick="applyTheme('trit-claro')" title="Rosa & Turquesa">
+                        <span class="tema-swatch" aria-hidden="true"><i style="--c:#FEF5F7"></i><i style="--c:#C2185B"></i><i style="--c:#C62828"></i></span>
+                        <span class="tema-nome">Rosa & Turquesa</span>
+                    </button>
+                    <button class="btn-tema btn-tema-cvd" data-tema="trit-escuro" onclick="applyTheme('trit-escuro')" title="Noite Vinho">
+                        <span class="tema-swatch" aria-hidden="true"><i style="--c:#1B0F15"></i><i style="--c:#FF7C98"></i><i style="--c:#D32F2F"></i></span>
+                        <span class="tema-nome">Noite Vinho</span>
+                    </button>
+                    <button class="btn-tema btn-tema-cvd" data-tema="trit-suave" onclick="applyTheme('trit-suave')" title="Menta & Coral">
+                        <span class="tema-swatch" aria-hidden="true"><i style="--c:#EDF8F6"></i><i style="--c:#C23F33"></i><i style="--c:#C0392B"></i></span>
+                        <span class="tema-nome">Menta & Coral</span>
+                    </button>
+                    <button class="btn-tema btn-tema-cvd" data-tema="trit-contraste" onclick="applyTheme('trit-contraste')" title="Contraste Ciano">
+                        <span class="tema-swatch" aria-hidden="true"><i style="--c:#000000"></i><i style="--c:#FF4D6D"></i><i style="--c:#D32F2F"></i></span>
+                        <span class="tema-nome">Contraste Ciano</span>
+                    </button>
+                </div>
+            </div>
+    </div>
+
 </div>
 
 <!-- Barra de Acessibilidade -->

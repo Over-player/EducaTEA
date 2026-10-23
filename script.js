@@ -1497,12 +1497,12 @@ function telaCacaPalavras() {
                 const diffCol = Math.abs(ultima.col - col);
                 if (diffRow <= 1 && diffCol <= 1 && !(diffRow === 0 && diffCol === 0)) {
                     selecionadas.push({ row, col });
-                    cell.style.background = "#2ecc71";
+                    cell.style.background = "var(--feedback-ok)";
                 }
             } else if (!isDrag || selecionadas.length === 0) {
                 if (!isDrag) limparSelecao();
                 selecionadas.push({ row, col });
-                cell.style.background = "#2ecc71";
+                cell.style.background = "var(--feedback-ok)";
             }
         }
         atualizarPreview();
@@ -1760,7 +1760,7 @@ function dropSilaba(e) {
         const clone = elemento.cloneNode(true);
         clone.draggable = false;
         clone.style.cursor = "default";
-        clone.style.background = "#2ecc71";
+        clone.style.background = "var(--feedback-ok)";
         e.target.appendChild(clone);
         elemento.style.opacity = "0.3";
         elemento.draggable = false;
@@ -2015,7 +2015,7 @@ function dropLetraMemoria(e) {
         const clone = elemento.cloneNode(true);
         clone.draggable = false;
         clone.style.cursor = "default";
-        clone.style.background = "#2ecc71";
+        clone.style.background = "var(--feedback-ok)";
         e.target.appendChild(clone);
         elemento.style.opacity = "0.3";
         elemento.draggable = false;
@@ -2180,7 +2180,7 @@ function dropSombraHandler(e, target) {
     const clone = elemento.cloneNode(true);
     clone.draggable = false;
     clone.style.cursor = "default";
-    clone.style.background = "#2ecc71";
+    clone.style.background = "var(--feedback-ok)";
     target.innerHTML = "";
     target.appendChild(clone);
     elemento.style.opacity = "0.3";
@@ -2291,7 +2291,7 @@ function dropCorHandler(e, target) {
     clone.id = "clone-cor-" + Date.now();
     clone.draggable = false;
     clone.style.cursor = "default";
-    clone.style.background = "#2ecc71";
+    clone.style.background = "var(--feedback-ok)";
     clone.setAttribute('data-usado', 'true');
     containerItens.appendChild(clone);
     elemento.style.display = "none";
@@ -2530,7 +2530,7 @@ function dropRotinaHandler(e, target) {
     const clone = elemento.cloneNode(true);
     clone.draggable = false;
     clone.style.cursor = "default";
-    clone.style.background = "#2ecc71";
+    clone.style.background = "var(--feedback-ok)";
     slotTexto.innerHTML = "";
     slotTexto.appendChild(clone);
     elemento.style.opacity = "0.3";
@@ -2605,7 +2605,7 @@ function telaCuidadoAmbiente() {
         </div>
         <p style="font-size: 1.2rem;">Essa atitude é boa para o planeta?</p>
         <div style="display: flex; gap: 20px; justify-content: center; margin: 20px;">
-            <button class="btn-opcao" onclick="verificarAmbiente(true, ${atual.correta}, '${atual.explicacao}')" style="background: #2ecc71; padding: 15px 30px; font-size: 1.2rem; cursor: pointer; border: none; border-radius: 10px; color: white;">👍 SIM</button>
+            <button class="btn-opcao" onclick="verificarAmbiente(true, ${atual.correta}, '${atual.explicacao}')" style="background: var(--feedback-ok); padding: 15px 30px; font-size: 1.2rem; cursor: pointer; border: none; border-radius: 10px; color: white;">👍 SIM</button>
             <button class="btn-opcao" onclick="verificarAmbiente(false, ${atual.correta}, '${atual.explicacao}')" style="background: #ff6b6b; padding: 15px 30px; font-size: 1.2rem; cursor: pointer; border: none; border-radius: 10px; color: white;">👎 NÃO</button>
         </div>
         <button class="btn-voltar" onclick="telaCuidadoAmbiente()">🔄 Próxima</button>
@@ -2636,13 +2636,20 @@ function loadUserPreferences() {
     }
 }
 function saveUserPreferences() { localStorage.setItem('educatea_preferences', JSON.stringify(userPreferences)); }
+// Temas para daltônicos: prot- (protanopia), deut- (deuteranopia), trit- (tritanopia)
+const TEMAS_DALTONICOS_PREFIXOS = ['prot-', 'deut-', 'trit-'];
+function ehTemaDaltonico(theme) {
+    return TEMAS_DALTONICOS_PREFIXOS.some(p => String(theme).startsWith(p));
+}
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     userPreferences.theme = theme;
     saveUserPreferences();
-    document.querySelectorAll('.btn-tema').forEach(btn => {
+    document.querySelectorAll('.btn-tema[data-tema]').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-tema') === theme);
     });
+    const btnDalt = document.getElementById('btn-abrir-daltonismo');
+    if (btnDalt) btnDalt.classList.toggle('active', ehTemaDaltonico(theme));
 }
 function applyFontSize(size) {
     document.body.classList.remove('fonte-pequena', 'fonte-media', 'fonte-grande');
@@ -2662,7 +2669,39 @@ function applySpacing(spacing) {
         btn.classList.toggle('active', btn.getAttribute('data-espacamento') === spacing);
     });
 }
-function togglePersonalizacao() { document.getElementById('personalizacao-menu').classList.toggle('active'); }
+function togglePersonalizacao() {
+    const menu = document.getElementById('personalizacao-menu');
+    const dalt = document.getElementById('daltonismo-menu');
+    const algumAberto = menu.classList.contains('active') || (dalt && dalt.classList.contains('active'));
+    if (algumAberto) {
+        menu.classList.remove('active');
+        if (dalt) dalt.classList.remove('active');
+    } else {
+        menu.classList.add('active');
+    }
+}
+// Abre o painel de temas para daltônicos no lugar do painel de temas (mesmo tamanho)
+function abrirTemasDaltonismo() {
+    const menu = document.getElementById('personalizacao-menu');
+    const dalt = document.getElementById('daltonismo-menu');
+    if (!menu || !dalt) return;
+    const altura = menu.offsetHeight;
+    // garante a mesma proporção do painel de temas (rola por dentro se precisar)
+    if (altura > 0 && window.innerWidth > 768) {
+        dalt.style.height = altura + 'px';
+    } else {
+        dalt.style.height = '';
+    }
+    menu.classList.remove('active');
+    dalt.classList.add('active');
+    dalt.scrollTop = 0;
+}
+function fecharTemasDaltonismo() {
+    const menu = document.getElementById('personalizacao-menu');
+    const dalt = document.getElementById('daltonismo-menu');
+    if (dalt) dalt.classList.remove('active');
+    if (menu) menu.classList.add('active');
+}
 function resetPreferences() {
     applyTheme('light');
     applyFontSize('media');
