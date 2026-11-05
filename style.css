@@ -2576,6 +2576,126 @@ body.espacamento-confortavel { line-height: 1.8; }
     .personalizacao-menu { animation: none !important; }
 }
 
+
+/* ================= ABA DE RESULTADOS ================= */
+.resultados-hero { text-align: center; }
+.resultados-subtitulo {
+    margin: 28px 0 14px;
+    color: var(--accent-color);
+    font-size: 1.2rem;
+}
+.resultados-timeline {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-left: 22px;
+}
+.resultados-timeline::before {
+    content: "";
+    position: absolute;
+    left: 17px;
+    top: 10px;
+    bottom: 10px;
+    width: 4px;
+    border-radius: 4px;
+    background: var(--accent-color);
+    opacity: 0.35;
+}
+.resultado-card {
+    position: relative;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 20px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow-md);
+}
+.resultado-destaque {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.2), var(--shadow-lg);
+}
+.resultado-marcador {
+    flex: none;
+    width: 38px;
+    height: 38px;
+    margin-left: -39px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    background: var(--accent-color);
+    color: #fff;
+    border: 3px solid var(--bg-primary);
+}
+.resultado-corpo { flex: 1; min-width: 0; }
+.resultado-corpo h4 {
+    font-size: 1.35rem;
+    margin: 8px 0 2px;
+    color: var(--text-primary);
+}
+.resultado-corpo p { color: var(--text-secondary); line-height: 1.6; margin-top: 8px; }
+.resultado-corpo .resultado-local {
+    margin-top: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dim);
+}
+.resultado-corpo .resultado-obrigado {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+.resultado-selo {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
+    background: rgba(var(--accent-color-rgb), 0.1);
+}
+.resultado-selo.selo-conquista {
+    background: var(--accent-color);
+    color: #fff;
+}
+.resultado-selo.selo-breve { border-style: dashed; }
+
+.resultados-agradecimentos { margin-top: 28px; }
+.resultados-agradecimentos h3 { color: var(--accent-color); margin-bottom: 10px; }
+.resultados-agradecimentos p { color: var(--text-secondary); line-height: 1.6; }
+.resultados-agradecimentos ul {
+    list-style: none;
+    margin: 14px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.resultados-agradecimentos li {
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+.resultados-assinatura {
+    text-align: right;
+    font-weight: 700;
+    color: var(--accent-color) !important;
+}
+
+@media (max-width: 600px) {
+    .resultados-timeline { padding-left: 16px; }
+    .resultados-timeline::before { left: 11px; }
+    .resultado-card { padding: 14px; gap: 12px; }
+    .resultado-marcador { width: 32px; height: 32px; margin-left: -33px; }
+    .resultado-corpo h4 { font-size: 1.15rem; }
+}
+
 /* =====================================================================
    🎨 TEMAS PARA DALTÔNICOS (Protanopia, Deuteranopia e Tritanopia)
    Paletas escolhidas para não depender de vermelho×verde (prot/deut) nem
@@ -2937,3 +3057,30 @@ body.espacamento-confortavel { line-height: 1.8; }
 .tema-swatch i { flex: 1; background: var(--c); }
 .tema-nome { line-height: 1.15; font-size: 0.75rem; }
 .personalizacao-menu.daltonismo-menu { overflow-y: auto; }
+
+
+
+/* ================= CARROSSEL INFINITO (substitui as regras antigas) ================= */
+.carousel-window { overflow: hidden; width: 100%; }
+.carousel-track {
+    display: flex;
+    width: max-content;
+    gap: 0;
+    align-items: center;
+    animation: scrollInfinito 30s linear infinite;
+}
+.carousel-track:hover { animation-play-state: paused; }
+.carousel-group {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 40px;
+    padding-right: 40px;   /* mesmo espaço do gap: os dois grupos encaixam sem pulo */
+}
+@keyframes scrollInfinito {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .carousel-track { animation-duration: 120s; }
+}

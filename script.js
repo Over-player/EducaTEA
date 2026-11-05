@@ -960,6 +960,23 @@ function navigateHome() {
     if (primeiroItem) primeiroItem.classList.add('active');
     document.getElementById('home-section').classList.add('active');
     document.getElementById('games-section').classList.remove('active');
+    const resHome = document.getElementById('resultados-section');
+    if (resHome) resHome.classList.remove('active');
+    if (window.innerWidth <= 900) closeSidebar();
+}
+
+// Aba de resultados (feiras e agradecimentos)
+function abrirResultados() {
+    document.querySelectorAll('.sub-menu').forEach(sub => sub.classList.remove('open'));
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active', 'open'));
+    const navRes = document.getElementById('nav-resultados');
+    if (navRes) navRes.classList.add('active');
+    document.getElementById('home-section').classList.remove('active');
+    document.getElementById('games-section').classList.remove('active');
+    document.getElementById('resultados-section').classList.add('active');
+    const main = document.querySelector('.main-content');
+    if (main) main.scrollTop = 0;
+    window.scrollTo(0, 0);
     if (window.innerWidth <= 900) closeSidebar();
 }
 
@@ -984,6 +1001,10 @@ function carregarJogos(nomeJogo) {
     }
 
     document.getElementById('home-section').classList.remove('active');
+    const resSec = document.getElementById('resultados-section');
+    if (resSec) resSec.classList.remove('active');
+    const navRes = document.getElementById('nav-resultados');
+    if (navRes) navRes.classList.remove('active');
     document.getElementById('games-section').classList.add('active');
     document.getElementById('category-name').innerText = "Jogo: " + nomeJogo;
     if (window.innerWidth <= 900) closeSidebar();
@@ -2686,7 +2707,6 @@ function abrirTemasDaltonismo() {
     const dalt = document.getElementById('daltonismo-menu');
     if (!menu || !dalt) return;
     const altura = menu.offsetHeight;
-    // garante a mesma proporção do painel de temas (rola por dentro se precisar)
     if (altura > 0 && window.innerWidth > 768) {
         dalt.style.height = altura + 'px';
     } else {
@@ -2954,31 +2974,49 @@ function toggleMusicPlayer(event) {
 }
 
 // ================= CARROSSEL =================
+// Carrossel infinito: dois grupos idênticos lado a lado; a animação anda 50% (um grupo)
+// e recomeça sem "pulo". Cada grupo repete as imagens até ser mais largo que a tela,
+// então funciona com qualquer quantidade de apoiadores (mesmo só 1 ou 2).
+const CARROSSEL_IMAGENS = [
+    "imagens/logo_ifms-removebg-preview.png",
+    "imagens/image-removebg-preview.png"
+];
+const CARROSSEL_ITEM_LARGURA = 180;   // igual a .carousel-img no CSS
+const CARROSSEL_ESPACO = 40;          // igual ao gap de .carousel-group no CSS
+const CARROSSEL_VELOCIDADE = 60;      // pixels por segundo
+
 function initCarrossel() {
     const track = document.getElementById('carousel-track');
-    if (!track) return;
-    
-    // 🔧 Caminhos ajustados. Se o seu arquivo tiver outra extensão (ex: .jpg), mude aqui:
-    const imagens = [
-        "imagens/logo_ifms-removebg-preview.png",
-        "imagens/image-removebg-preview.png",
-        "imagens/APAE.png"
-    ];
-    
-    let slidesHTML = '';
-    
-    // Repete as imagens para dar o efeito de rolagem infinita
-    for (let i = 0; i < 4; i++) {
-        imagens.forEach(src => { 
-            slidesHTML += `
-                <img src="${src}" alt="Apoiador" class="carousel-img" 
-                     style="width: 150px; height: auto; margin: 0 10px; object-fit: contain;"
-                     onerror="this.style.display='none'; console.error('Imagem não encontrada:', this.src)">
-            `; 
+    const janela = track ? track.parentElement : null;
+    if (!track || !janela) return;
+
+    const larguraJanela = janela.clientWidth || window.innerWidth;
+    const larguraItem = CARROSSEL_ITEM_LARGURA + CARROSSEL_ESPACO;
+    // quantas imagens cabem para o grupo ser maior que a janela (e ter um múltiplo da lista)
+    const minimo = Math.ceil(larguraJanela / larguraItem) + 1;
+    const repeticoes = Math.max(1, Math.ceil(minimo / CARROSSEL_IMAGENS.length));
+
+    let itens = '';
+    for (let r = 0; r < repeticoes; r++) {
+        CARROSSEL_IMAGENS.forEach(src => {
+            itens += `<img src="${src}" alt="Apoiador" class="carousel-img" draggable="false"
+                          onerror="this.style.display='none'; console.error('Imagem não encontrada:', this.src)">`;
         });
     }
-    track.innerHTML = slidesHTML;
+    const grupo = `<div class="carousel-group">${itens}</div>`;
+    track.innerHTML = grupo + grupo.replace('<div class="carousel-group">', '<div class="carousel-group" aria-hidden="true">');
+
+    // velocidade constante, não importa quantas imagens tenha
+    const larguraGrupo = repeticoes * CARROSSEL_IMAGENS.length * larguraItem;
+    track.style.animationDuration = Math.max(10, larguraGrupo / CARROSSEL_VELOCIDADE) + 's';
 }
+
+let carrosselResizeTimer;
+window.addEventListener('resize', () => {
+    clearTimeout(carrosselResizeTimer);
+    carrosselResizeTimer = setTimeout(initCarrossel, 250);
+});
+
 // ================= INICIALIZAÇÃO =================
 document.addEventListener('DOMContentLoaded', () => {
     iniciarAudio();

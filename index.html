@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal EducaTEA | Inclusão Digital</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20261104">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
@@ -236,6 +236,11 @@
                 <li class="sub-item" onclick="carregarJogo('Minha Rotina')">⏰ Minha Rotina</li>
                 <li class="sub-item" onclick="carregarJogo('Cuidado com o Ambiente')">🌍 Cuidado com o Ambiente</li>
             </ul>
+
+            <li class="nav-label">Nosso Projeto</li>
+            <li class="nav-item" id="nav-resultados" onclick="abrirResultados()">
+                <i class="icon">🏆</i> Resultados
+            </li>
         </ul>
     </aside>
 
@@ -248,7 +253,7 @@
             <div class="grid-info">
                 <div class="card-base">
                     <h3>Quem somos?</h3>
-                    <p>Olá! Somos Ana Carolina Gattes Roriz e Bruno Silva de Oliveira, estudantes do 3º ano do Ensino Médio Integrado ao Técnico em Informática do IFMS.<br> Este site nasceu do nosso Trabalho de Conclusão de Curso (TCC), mas, mais do que um projeto escolar, ele carrega um propósito especial: oferecer um ponto de apoio para crianças com Transtorno do Espectro Autista (TEA) e para suas famílias.<br> A ideia surgiu ao percebermos como a tecnologia pode ser uma ponte para o aprendizado, a comunicação e o acolhimento.<br> Unindo os conhecimentos que adquirimos ao longo do curso técnico com pesquisas sobre o universo do TEA, decidimos criar um ambiente digital pensado com carinho, acessível e cheio de recursos.</p>
+                    <p>Olá! Somos Ana Carolina Gattes Roriz e Bruno Silva de Oliveira, estudantes do 3º ano do Ensino Médio Integrado ao Técnico em Informática do IFMS, Campus Ponta Porã.<br> Este site nasceu do nosso Trabalho de Conclusão de Curso (TCC), mas, mais do que um projeto escolar, ele carrega um propósito especial: oferecer um ponto de apoio para crianças com Transtorno do Espectro Autista (TEA) e para suas famílias.<br> A ideia surgiu ao percebermos como a tecnologia pode ser uma ponte para o aprendizado, a comunicação e o acolhimento.<br> Unindo os conhecimentos que adquirimos ao longo do curso técnico com pesquisas sobre o universo do TEA, decidimos criar um ambiente digital pensado com carinho, acessível e cheio de recursos.</p>
                 </div>
                 <div class="card-base">
                     <h3>Como foi feito?</h3>
@@ -307,6 +312,63 @@
             <div id="games-container"></div>
         </section>
         
+        <section id="resultados-section" class="page">
+            <div class="hero-card resultados-hero">
+                <h1>🏆 Resultados</h1>
+                <p>O EducaTEA saiu da tela e foi para as feiras de ciência e tecnologia. Esta é a nossa trajetória até aqui e o nosso muito obrigado a quem caminhou com a gente.</p>
+            </div>
+
+            <h3 class="resultados-subtitulo">📍 Nossa trajetória</h3>
+            <div class="resultados-timeline">
+
+                <article class="resultado-card">
+                    <div class="resultado-marcador">1</div>
+                    <div class="resultado-corpo">
+                        <span class="resultado-selo selo-feito">✅ Participamos</span>
+                        <h4>FECIFRON</h4>
+                        <p class="resultado-local">Feira realizada no nosso IFMS Campus Ponta Porã</p>
+                        <p>Apresentamos o EducaTEA na feira do nosso campus para estudantes, professores e visitantes.</p>
+                        <p class="resultado-obrigado">💙 Obrigado a todos que visitaram, jogaram e conversaram com a gente.</p>
+                    </div>
+                </article>
+
+                <article class="resultado-card resultado-destaque">
+                    <div class="resultado-marcador">2</div>
+                    <div class="resultado-corpo">
+                        <span class="resultado-selo selo-conquista">🎟️ Credencial conquistada</span>
+                        <h4>FETECMS</h4>
+                        <p class="resultado-local">Feira de ciência e tecnologia</p>
+                        <p>Levamos o EducaTEA para a FETECMS e, de lá, voltamos com uma conquista: a <strong>credencial para participar do MCTI</strong>. Foi o reconhecimento de que um projeto feito por estudantes pode ajudar famílias e crianças com TEA.</p>
+                        <p class="resultado-obrigado">💙 Obrigado à organização da feira, aos avaliadores e a todos que acreditaram no projeto.</p>
+                    </div>
+                </article>
+
+                <article class="resultado-card">
+                    <div class="resultado-marcador">3</div>
+                    <div class="resultado-corpo">
+                        <span class="resultado-selo selo-breve">🚀 Em breve</span>
+                        <h4>MCTI</h4>
+                        <p class="resultado-local">Com a credencial conquistada na FETECMS</p>
+                        <p>Nosso próximo passo: levar o EducaTEA ao MCTI, graças à credencial que ganhamos na FETECMS. Vamos continuar melhorando o site até lá.</p>
+                        <p class="resultado-obrigado">💙 Contamos com a torcida de vocês!</p>
+                    </div>
+                </article>
+            </div>
+
+            <div class="card-base resultados-agradecimentos">
+                <h3>💙 Agradecimentos</h3>
+                <p>Cada feira trouxe novos aprendizados, e nada disso seria possível sem as pessoas que estiveram ao nosso lado. Nosso muito obrigado:</p>
+                <ul>
+                    <li>🏫 Ao nosso <strong>IFMS Campus Ponta Porã</strong>, que sediou a <strong>FECIFRON</strong>, e à equipe organizadora, por abrir as portas para o projeto;</li>
+                    <li>🔬 À organização da <strong>FETECMS</strong> e aos avaliadores, pela oportunidade e pela credencial para o <strong>MCTI</strong>;</li>
+                    <li>👩‍🏫 Aos professores e orientadores que nos acompanharam em cada etapa;</li>
+                    <li>👨‍👩‍👧 Às nossas famílias e amigos, pelo apoio de sempre;</li>
+                    <li>🧩 A cada pessoa que visitou o nosso estande, jogou e deixou uma opinião: vocês fazem o EducaTEA melhorar.</li>
+                </ul>
+                <p class="resultados-assinatura">Com carinho, Ana Carolina e Bruno 💙</p>
+            </div>
+        </section>
+
         <section class="apoiadores-section">
             <div class="apoiadores-container">
                 <h4 class="apoiadores-titulo">Nossos Apoiadores</h4>
@@ -359,6 +421,6 @@
 
 <button id="btn-abrir-conquistas" class="btn-abrir-conquistas" onclick="toggleConquistasPanel()">🏆</button>
 
-<script src="script.js"></script>
+<script src="script.js?v=20261104"></script>
 </body>
 </html>
