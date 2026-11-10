@@ -3084,3 +3084,83 @@ body.espacamento-confortavel { line-height: 1.8; }
 @media (prefers-reduced-motion: reduce) {
     .carousel-track { animation-duration: 120s; }
 }
+
+
+/* ================= ABA DO TCC ================= */
+.tcc-hero { text-align: center; }
+.tcc-ficha { margin-top: 20px; }
+.tcc-ficha h3 { color: var(--accent-color); margin-bottom: 12px; line-height: 1.3; }
+.tcc-dados { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.tcc-dados li { color: var(--text-secondary); line-height: 1.5; }
+.tcc-dados strong { color: var(--text-primary); }
+.tcc-botoes { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn-tcc {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: 2px solid var(--accent-color);
+    background: transparent;
+    color: var(--accent-color);
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.btn-tcc:hover { transform: translateY(-2px); background: rgba(var(--accent-color-rgb), 0.12); }
+.btn-tcc-principal { background: var(--accent-color); color: var(--on-accent, #fff); }
+.btn-tcc-principal:hover { background: var(--accent-dark); }
+.tcc-leitor { margin-top: 20px; padding: 12px; }
+.tcc-leitor iframe {
+    width: 100%;
+    height: 80vh;
+    min-height: 480px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: #fff;
+}
+.tcc-aviso { margin-top: 10px; font-size: 0.85rem; color: var(--text-dim); text-align: center; }
+@media (max-width: 700px) {
+    .tcc-leitor iframe { display: none; }
+    .btn-tcc { flex: 1 1 100%; justify-content: center; }
+}
+
+/* ================= CONQUISTAS: categorias e barra de progresso ================= */
+.conquista-cat {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 14px 0 2px; padding-bottom: 6px;
+    font-size: 1rem; color: var(--accent-color); border-bottom: 2px solid var(--border-color);
+}
+.conquista-cat:first-child { margin-top: 4px; }
+.conquista-cat span {
+    font-size: 0.8rem; font-weight: 700; padding: 2px 10px; border-radius: 999px;
+    background: rgba(var(--accent-color-rgb), 0.15); color: var(--accent-color);
+}
+.conquista-texto { flex: 1; min-width: 0; }
+.conquista-item.bloqueada { opacity: 0.85; filter: none; }
+.conquista-item.bloqueada .conquista-emoji { filter: grayscale(1); opacity: 0.7; }
+.conquista-item.desbloqueada { border: 2px solid var(--accent-color); background: rgba(var(--accent-color-rgb), 0.1); }
+.conquista-prog {
+    height: 8px; margin-top: 8px; border-radius: 8px; overflow: hidden;
+    background: var(--bg-primary); border: 1px solid var(--border-color);
+}
+.conquista-prog i { display: block; height: 100%; background: var(--accent-color); border-radius: 8px; }
+.conquista-texto small { display: block; margin-top: 3px; font-size: 0.75rem; color: var(--text-dim); font-weight: 600; }
+
+/* ---------- conquistas: resumo, filtros, troféus ---------- */
+.conq-resumo { padding: 10px 12px; margin-bottom: 10px; border-radius: 14px; background: var(--bg-hover); }
+.conq-resumo-topo { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.conq-geral { height: 12px; }
+.conq-filtros { display: flex; gap: 6px; margin: 10px 0 4px; position: sticky; top: 0; z-index: 2; padding: 6px 0; background: var(--bg-card, var(--bg-primary, transparent)); }
+.conq-filtro { flex: 1; padding: 8px 6px; border-radius: 999px; border: 2px solid var(--border-color); background: transparent; color: var(--text-primary); font: 700 .85rem inherit; font-family: inherit; cursor: pointer; }
+.conq-filtro.ativo { background: var(--accent-color); border-color: var(--accent-color); color: var(--on-accent, #fff); }
+.conq-filtro:focus-visible { outline: 3px solid var(--text-primary); outline-offset: 2px; }
+.conq-tier { font-size: .95rem; margin-left: 4px; }
+.conquista-item.tier-1.desbloqueada { border-color: #b87333; }
+.conquista-item.tier-2.desbloqueada { border-color: #8c97a6; }
+.conquista-item.tier-3.desbloqueada { border-color: #e0a800; }
+.conquista-item.tier-4.desbloqueada { border-color: #3fb6e8; box-shadow: 0 0 0 2px rgba(63,182,232,.25); }
+.conquista-item.quase { border: 2px dashed var(--accent-color); }
+.conquista-item.quase .conquista-emoji { filter: none; opacity: 1; }
+.conquista-popup { max-width: min(320px, calc(100vw - 30px)); }

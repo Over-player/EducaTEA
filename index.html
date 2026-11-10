@@ -4,11 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal EducaTEA | Inclusão Digital</title>
-    <link rel="stylesheet" href="style.css?v=20261104">
+    <link rel="stylesheet" href="style.css?v=20261110">
+    <link rel="stylesheet" href="jogos.css?v=20261110">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
+
+
+<header class="gov-header">
+    <div class="header-container">
+        <button class="menu-toggle" id="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menu de áreas de estudo" aria-expanded="false">
+            <span class="menu-toggle-bar"></span>
+            <span class="menu-toggle-bar"></span>
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal EducaTEA | Inclusão Digital</title>
+    <link rel="stylesheet" href="style.css?v=20261110">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Comic+Neue:wght@400;700&amp;display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
 
 <header class="gov-header">
     <div class="header-container">
@@ -22,7 +42,7 @@
                 <span class="logo-icon">🎓</span>
                 <span class="logo-main">Educa<span class="logo-highlight">TEA</span></span>
             </div>
-            <span class="logo-subtitle">Inclusão Digital | Acolhimento & Aprendizado</span>
+            <span class="logo-subtitle">Inclusão Digital | Acolhimento &amp; Aprendizado</span>
         </div>
         <nav class="top-nav">
             <div class="status-container">
@@ -33,6 +53,7 @@
     </div>
 </header>
 
+
 <!-- PAINEL DE PERSONALIZAÇÃO -->
 <div id="personalizacao-panel" class="personalizacao-panel">
     <button class="btn-personalizar" onclick="togglePersonalizacao()" title="Personalizar Estilo">
@@ -40,7 +61,7 @@
     </button>
     <div id="personalizacao-menu" class="personalizacao-menu">
     <h3>🎨 Personalizar Estilo</h3>
-        
+       
         <div class="opcao-personalizacao">
             <label>🎭 Tema</label>
             <div class="temas-grid">
@@ -56,7 +77,7 @@
                 <button class="btn-tema" id="btn-abrir-daltonismo" onclick="abrirTemasDaltonismo()" aria-controls="daltonismo-menu">🌈 Temas para Daltônicos ›</button>
             </div>
         </div>
-        
+       
         <div class="opcao-personalizacao">
             <label>🔤 Tamanho da Fonte</label>
             <div class="fonte-tamanho">
@@ -65,7 +86,7 @@
                 <button class="btn-fonte" data-tamanho="grande" onclick="applyFontSize('grande')">G</button>
             </div>
         </div>
-        
+       
         <div class="opcao-personalizacao">
             <label>📏 Espaçamento</label>
             <div class="espacamento-opcoes">
@@ -73,7 +94,7 @@
                 <button class="btn-espacamento" data-espacamento="comfortable" onclick="applySpacing('comfortable')">Confortável</button>
             </div>
         </div>
-        
+       
         <div class="opcao-personalizacao">
             <label>🔄 Redefinir Padrão</label>
             <button class="btn-acessibilidade" onclick="resetPreferences()" style="width: 100%;">
@@ -82,12 +103,14 @@
         </div>
     </div>
 
+
     <!-- SUBPAINEL: TEMAS PARA DALTÔNICOS (abre no lugar do painel de temas, mesmo tamanho) -->
     <div id="daltonismo-menu" class="personalizacao-menu daltonismo-menu" role="dialog" aria-label="Temas para daltônicos">
         <div class="daltonismo-topo">
             <button class="btn-voltar-temas" onclick="fecharTemasDaltonismo()" aria-label="Voltar para os temas" title="Voltar">←</button>
             <h3>🌈 Temas para Daltônicos</h3>
         </div>
+
 
             <div class="opcao-personalizacao grupo-daltonismo">
                 <label>🔴 Protanopia</label>
@@ -112,6 +135,7 @@
                 </div>
             </div>
 
+
             <div class="opcao-personalizacao grupo-daltonismo">
                 <label>🟢 Deuteranopia</label>
                 <small>Dificuldade com verde. Usa azul, âmbar e laranja.</small>
@@ -134,6 +158,7 @@
                     </button>
                 </div>
             </div>
+
 
             <div class="opcao-personalizacao grupo-daltonismo">
                 <label>🔵 Tritanopia</label>
@@ -159,7 +184,9 @@
             </div>
     </div>
 
+
 </div>
+
 
 <!-- Barra de Acessibilidade -->
 <div class="acessibilidade-bar">
@@ -177,8 +204,10 @@
     </button>
 </div>
 
+
 <!-- TOASTS DE FEEDBACK -->
 <div id="toast-container" aria-live="polite"></div>
+
 
 <div class="wrapper">
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
@@ -188,7 +217,7 @@
                 <i class="icon">🏠</i> Início
             </li>
             <li class="nav-label">Áreas de Estudo</li>
-            
+           
             <li class="nav-item" onclick="toggleSubMenu('palavras', this)">
                 <i class="icon">✍️</i> Palavras <span class="seta">▼</span>
             </li>
@@ -203,6 +232,7 @@
                 <li class="sub-item" onclick="carregarJogo('Palavra Oculta')">🔎 Palavra Oculta</li>
                 <li class="sub-item" onclick="carregarJogo('Sombras Mágicas')">🌑 Sombras Mágicas</li>
             </ul>
+
 
             <li class="nav-item" onclick="toggleSubMenu('matematica', this)">
                 <i class="icon">🔢</i> Matemática <span class="seta">▼</span>
@@ -219,6 +249,7 @@
                 <li class="sub-item" onclick="carregarJogo('Classificação de Cores')">🎨 Classificação de Cores</li>
                 <li class="sub-item" onclick="carregarJogo('Contagem de Objetos')">🔟 Contagem de Objetos</li>
             </ul>
+
 
             <li class="nav-item" onclick="toggleSubMenu('ciencias', this)">
                 <i class="icon">🧪</i> Ciências <span class="seta">▼</span>
@@ -237,12 +268,17 @@
                 <li class="sub-item" onclick="carregarJogo('Cuidado com o Ambiente')">🌍 Cuidado com o Ambiente</li>
             </ul>
 
+
             <li class="nav-label">Nosso Projeto</li>
             <li class="nav-item" id="nav-resultados" onclick="abrirResultados()">
                 <i class="icon">🏆</i> Resultados
             </li>
+            <li class="nav-item" id="nav-tcc" onclick="abrirTCC()">
+                <i class="icon">📄</i> Nosso TCC
+            </li>
         </ul>
     </aside>
+
 
     <main class="main-content">
         <section id="home-section" class="page active">
@@ -262,9 +298,63 @@
             </div>
         </section>
 
+
+        <section id="resultados-section" class="page">
+            <div class="hero-card resultados-hero">
+                <h1>🏆 Resultados</h1>
+                <p>O EducaTEA saiu da tela e foi para as feiras de ciência e tecnologia. Esta é a nossa trajetória até aqui e o nosso muito obrigado a quem caminhou com a gente.</p>
+            </div>
+            <h3 class="resultados-subtitulo">📍 Nossa trajetória</h3>
+            <div class="resultados-timeline">
+                <article class="resultado-card">
+                    <div class="resultado-marcador">1</div>
+                    <div class="resultado-corpo">
+                        <span class="resultado-selo selo-feito">✅ Participamos</span>
+                        <h4>FECIFRON</h4>
+                        <p class="resultado-local">Feira realizada no nosso IFMS Campus Ponta Porã</p>
+                        <p>Apresentamos o EducaTEA na feira do nosso campus para estudantes, professores e visitantes.</p>
+                        <p class="resultado-obrigado">💙 Obrigado a todos que visitaram, jogaram e conversaram com a gente.</p>
+                    </div>
+                </article>
+                <article class="resultado-card resultado-destaque">
+                    <div class="resultado-marcador">2</div>
+                    <div class="resultado-corpo">
+                        <span class="resultado-selo selo-conquista">🎟️ Credencial conquistada</span>
+                        <h4>FETECMS</h4>
+                        <p class="resultado-local">Feira de ciência e tecnologia</p>
+                        <p>Levamos o EducaTEA para a FETECMS e, de lá, voltamos com uma conquista: a <strong>credencial para participar do MCTI</strong>. Foi o reconhecimento de que um projeto feito por estudantes pode ajudar famílias e crianças com TEA.</p>
+                        <p class="resultado-obrigado">💙 Obrigado à organização da feira, aos avaliadores e a todos que acreditaram no projeto.</p>
+                    </div>
+                </article>
+                <article class="resultado-card">
+                    <div class="resultado-marcador">3</div>
+                    <div class="resultado-corpo">
+                        <span class="resultado-selo selo-breve">🚀 Em breve</span>
+                        <h4>MCTI</h4>
+                        <p class="resultado-local">Com a credencial conquistada na FETECMS</p>
+                        <p>Nosso próximo passo: levar o EducaTEA ao MCTI, graças à credencial que ganhamos na FETECMS. Vamos continuar melhorando o site até lá.</p>
+                        <p class="resultado-obrigado">💙 Contamos com a torcida de vocês!</p>
+                    </div>
+                </article>
+            </div>
+            <div class="card-base resultados-agradecimentos">
+                <h3>💙 Agradecimentos</h3>
+                <p>Cada feira trouxe novos aprendizados, e nada disso seria possível sem as pessoas que estiveram ao nosso lado. Nosso muito obrigado:</p>
+                <ul>
+                    <li>🏫 Ao nosso <strong>IFMS Campus Ponta Porã</strong>, que sediou a <strong>FECIFRON</strong>, e à equipe organizadora, por abrir as portas para o projeto;</li>
+                    <li>🔬 À organização da <strong>FETECMS</strong> e aos avaliadores, pela oportunidade e pela credencial para o <strong>MCTI</strong>;</li>
+                    <li>👩‍🏫 Aos professores e orientadores que nos acompanharam em cada etapa;</li>
+                    <li>👨‍👩‍👧 Às nossas famílias e amigos, pelo apoio de sempre;</li>
+                    <li>🧩 A cada pessoa que visitou o nosso estande, jogou e deixou uma opinião: vocês fazem o EducaTEA melhorar.</li>
+                </ul>
+                <p class="resultados-assinatura">Com carinho, Ana Carolina e Bruno 💙</p>
+            </div>
+        </section>
+
+
         <section id="games-section" class="page">
             <h2 id="category-name" style="margin-bottom: 20px; color: var(--accent-color);">Jogo</h2>
-            
+           
             <!-- BARRA DE PROGRESSO -->
             <div class="progresso-card">
                 <div class="progresso-header">
@@ -291,13 +381,13 @@
                         </button>
                     </div>
                 </div>
-                
+               
                 <div class="progresso-bar-container">
                     <div id="progresso-fill-principal" class="progresso-fill-moderno">
                         <span id="progresso-texto-principal" class="progresso-texto">0%</span>
                     </div>
                 </div>
-                
+               
                 <div class="progresso-marcadores">
                     <div class="progresso-marcador"><span>🚀</span><span>Iniciante</span></div>
                     <div class="progresso-marcador"><span>🎯</span><span>Meta: 100 pts/nível</span></div>
@@ -308,66 +398,44 @@
                 </button>
             </div>
             <!-- FIM BARRA DE PROGRESSO -->
-            
+           
             <div id="games-container"></div>
         </section>
-        
-        <section id="resultados-section" class="page">
-            <div class="hero-card resultados-hero">
-                <h1>🏆 Resultados</h1>
-                <p>O EducaTEA saiu da tela e foi para as feiras de ciência e tecnologia. Esta é a nossa trajetória até aqui e o nosso muito obrigado a quem caminhou com a gente.</p>
+       
+        <section id="tcc-section" class="page">
+            <div class="hero-card tcc-hero">
+                <h1>📄 Nosso TCC</h1>
+                <p>Este site nasceu do nosso Trabalho de Conclusão de Curso. Aqui você pode ler o trabalho completo, baixar o arquivo ou abrir em outra aba.</p>
             </div>
 
-            <h3 class="resultados-subtitulo">📍 Nossa trajetória</h3>
-            <div class="resultados-timeline">
 
-                <article class="resultado-card">
-                    <div class="resultado-marcador">1</div>
-                    <div class="resultado-corpo">
-                        <span class="resultado-selo selo-feito">✅ Participamos</span>
-                        <h4>FECIFRON</h4>
-                        <p class="resultado-local">Feira realizada no nosso IFMS Campus Ponta Porã</p>
-                        <p>Apresentamos o EducaTEA na feira do nosso campus para estudantes, professores e visitantes.</p>
-                        <p class="resultado-obrigado">💙 Obrigado a todos que visitaram, jogaram e conversaram com a gente.</p>
-                    </div>
-                </article>
-
-                <article class="resultado-card resultado-destaque">
-                    <div class="resultado-marcador">2</div>
-                    <div class="resultado-corpo">
-                        <span class="resultado-selo selo-conquista">🎟️ Credencial conquistada</span>
-                        <h4>FETECMS</h4>
-                        <p class="resultado-local">Feira de ciência e tecnologia</p>
-                        <p>Levamos o EducaTEA para a FETECMS e, de lá, voltamos com uma conquista: a <strong>credencial para participar do MCTI</strong>. Foi o reconhecimento de que um projeto feito por estudantes pode ajudar famílias e crianças com TEA.</p>
-                        <p class="resultado-obrigado">💙 Obrigado à organização da feira, aos avaliadores e a todos que acreditaram no projeto.</p>
-                    </div>
-                </article>
-
-                <article class="resultado-card">
-                    <div class="resultado-marcador">3</div>
-                    <div class="resultado-corpo">
-                        <span class="resultado-selo selo-breve">🚀 Em breve</span>
-                        <h4>MCTI</h4>
-                        <p class="resultado-local">Com a credencial conquistada na FETECMS</p>
-                        <p>Nosso próximo passo: levar o EducaTEA ao MCTI, graças à credencial que ganhamos na FETECMS. Vamos continuar melhorando o site até lá.</p>
-                        <p class="resultado-obrigado">💙 Contamos com a torcida de vocês!</p>
-                    </div>
-                </article>
-            </div>
-
-            <div class="card-base resultados-agradecimentos">
-                <h3>💙 Agradecimentos</h3>
-                <p>Cada feira trouxe novos aprendizados, e nada disso seria possível sem as pessoas que estiveram ao nosso lado. Nosso muito obrigado:</p>
-                <ul>
-                    <li>🏫 Ao nosso <strong>IFMS Campus Ponta Porã</strong>, que sediou a <strong>FECIFRON</strong>, e à equipe organizadora, por abrir as portas para o projeto;</li>
-                    <li>🔬 À organização da <strong>FETECMS</strong> e aos avaliadores, pela oportunidade e pela credencial para o <strong>MCTI</strong>;</li>
-                    <li>👩‍🏫 Aos professores e orientadores que nos acompanharam em cada etapa;</li>
-                    <li>👨‍👩‍👧 Às nossas famílias e amigos, pelo apoio de sempre;</li>
-                    <li>🧩 A cada pessoa que visitou o nosso estande, jogou e deixou uma opinião: vocês fazem o EducaTEA melhorar.</li>
+            <div class="card-base tcc-ficha">
+                <h3>EducaTEA: Plataforma Interativa para uma Educação mais Inclusiva</h3>
+                <ul class="tcc-dados">
+                    <li><strong>👩‍🎓 Autores:</strong> Ana Carolina Gattes Roriz e Bruno Silva de Oliveira</li>
+                    <li><strong>👩‍🏫 Orientadora:</strong> Prof.ª Me. Mônica Mendes Da Cunha Pestana</li>
+                    <li><strong>🏫 Instituição:</strong> IFMS – Campus Ponta Porã · Curso Técnico Integrado em Informática</li>
+                    <li><strong>📅 Ano:</strong> 2025</li>
                 </ul>
-                <p class="resultados-assinatura">Com carinho, Ana Carolina e Bruno 💙</p>
+                <div class="tcc-botoes">
+                    <a class="btn-tcc btn-tcc-principal" href="tcc/TCC_EducaTEA.pdf" target="_blank" rel="noopener">📖 Abrir em nova aba</a>
+                    <a class="btn-tcc" href="tcc/TCC_EducaTEA.pdf" download="TCC_EducaTEA.pdf">📥 Baixar PDF</a>
+                </div>
+            </div>
+
+
+            <div class="tcc-vazio card-base" id="tcc-vazio" style="display:none">
+                <h3>📄 O TCC será publicado aqui em breve</h3>
+                <p>Estamos finalizando o envio do arquivo. Volte em breve para ler o trabalho completo.</p>
+            </div>
+
+
+            <div class="tcc-leitor card-base" id="tcc-leitor">
+                <iframe data-src="tcc/TCC_EducaTEA.pdf#view=FitH" title="TCC EducaTEA em PDF"></iframe>
+                <p class="tcc-aviso">Se o PDF não aparecer aqui (alguns celulares não mostram PDF dentro da página), use o botão <strong>Abrir em nova aba</strong> ou <strong>Baixar PDF</strong>.</p>
             </div>
         </section>
+
 
         <section class="apoiadores-section">
             <div class="apoiadores-container">
@@ -379,6 +447,7 @@
         </section>
     </main>
 </div>
+
 
 <!-- PLAYER DE MÚSICA -->
 <div id="music-player" class="music-player">
@@ -407,6 +476,7 @@
     </div>
 </div>
 
+
 <!-- PAINEL FLUTUANTE DE CONQUISTAS -->
 <div id="conquistas-player" class="music-player conquistas-flutuante collapsed">
     <div class="music-player-header conquistas-header" onclick="toggleConquistasPanel()">
@@ -419,8 +489,14 @@
     </div>
 </div>
 
+
 <button id="btn-abrir-conquistas" class="btn-abrir-conquistas" onclick="toggleConquistasPanel()">🏆</button>
 
-<script src="script.js?v=20261104"></script>
+
+<script src="script.js?v=20261110"></script>
+<script src="jogos-base.js?v=20261110"></script>
+<script src="jogos-dados.js?v=20261110"></script>
+<script src="jogos.js?v=20261110"></script>
 </body>
 </html>
+

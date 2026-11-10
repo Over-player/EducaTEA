@@ -347,7 +347,7 @@ function atualizarProgresso(pontosGanhos = null) {
     return false;
 }
 
-function registrarAcerto(jogoNome, tipoAcerto = 'ACERTO_SIMPLES', bonusAdicional = 0) {
+function registrarAcerto(jogoNome, tipoAcerto = 'ACERTO_SIMPLES', bonusAdicional = 0, fator = 1) {
     const configJogo = SISTEMA_PROGRESSO.JOGOS[jogoNome] || { base: 10, completo: 30 };
     let pontosBase = SISTEMA_PROGRESSO.PONTOS[tipoAcerto] || 10;
     const nivel = estadoAtual.nivelAtual || 1;
@@ -364,7 +364,7 @@ function registrarAcerto(jogoNome, tipoAcerto = 'ACERTO_SIMPLES', bonusAdicional
     if (!estadoAtual.estatisticasJogos[jogoNome]) estadoAtual.estatisticasJogos[jogoNome] = { acertos: 0, erros: 0 };
     estadoAtual.estatisticasJogos[jogoNome].acertos++;
 
-    let pontosGanhos = Math.floor((configJogo.base + pontosBase) * multiplicador) + bonusAdicional + bonusCombo;
+    let pontosGanhos = Math.max(1, Math.floor((configJogo.base + pontosBase) * multiplicador * fator)) + bonusAdicional + bonusCombo;
 
     estadoAtual.pontuacaoTotal = (estadoAtual.pontuacaoTotal || 0) + pontosGanhos;
     atualizarProgresso();
@@ -389,6 +389,9 @@ function registrarErro(jogoNome) {
     salvarProgresso();
 }
 
+// O botão "Limpar Progresso" usa esta função (antes ela não existia)
+function limparProgressoSalvo() { return resetarProgresso(); }
+
 function salvarProgresso() {
     const progresso = {
         nivel: estadoAtual.nivelAtual || 1,
@@ -398,6 +401,7 @@ function salvarProgresso() {
         totalAcertos: estadoAtual.totalAcertos || 0,
         conquistas: estadoAtual.conquistas || [],
         estatisticasJogos: estadoAtual.estatisticasJogos || {},
+        extras: estadoAtual.extras || {},
         data: new Date().toISOString()
     };
     localStorage.setItem('progresso_educa_tea', JSON.stringify(progresso));
@@ -417,6 +421,7 @@ function carregarProgresso() {
             estadoAtual.totalAcertos = progresso.totalAcertos || 0;
             estadoAtual.conquistas = progresso.conquistas || [];
             estadoAtual.estatisticasJogos = progresso.estatisticasJogos || {};
+            estadoAtual.extras = progresso.extras || {};
             estadoAtual.streakAtual = 0;
             atualizarProgresso();
             atualizarStreakVisual();
@@ -445,6 +450,7 @@ function resetarProgresso() {
         estadoAtual.totalAcertos = 0;
         estadoAtual.conquistas = [];
         estadoAtual.estatisticasJogos = {};
+        estadoAtual.extras = {};
         localStorage.removeItem('progresso_educa_tea');
         atualizarProgresso();
         atualizarStreakVisual();
@@ -953,31 +959,41 @@ function carregarDadosOnline() {
 carregarDadosOnline();
 
 // ================= NAVEGAÇÃO =================
-function navigateHome() {
+// Mostra uma única página (.page) e marca o item do menu correspondente
+function mostrarPagina(idPagina, idNav) {
     document.querySelectorAll('.sub-menu').forEach(sub => sub.classList.remove('open'));
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active', 'open'));
-    const primeiroItem = document.querySelector('.nav-item');
-    if (primeiroItem) primeiroItem.classList.add('active');
-    document.getElementById('home-section').classList.add('active');
-    document.getElementById('games-section').classList.remove('active');
-    const resHome = document.getElementById('resultados-section');
-    if (resHome) resHome.classList.remove('active');
-    if (window.innerWidth <= 900) closeSidebar();
-}
-
-// Aba de resultados (feiras e agradecimentos)
-function abrirResultados() {
-    document.querySelectorAll('.sub-menu').forEach(sub => sub.classList.remove('open'));
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active', 'open'));
-    const navRes = document.getElementById('nav-resultados');
-    if (navRes) navRes.classList.add('active');
-    document.getElementById('home-section').classList.remove('active');
-    document.getElementById('games-section').classList.remove('active');
-    document.getElementById('resultados-section').classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const pagina = document.getElementById(idPagina);
+    if (pagina) pagina.classList.add('active');
+    const nav = idNav ? document.getElementById(idNav) : document.querySelector('.nav-item');
+    if (nav) nav.classList.add('active');
     const main = document.querySelector('.main-content');
     if (main) main.scrollTop = 0;
     window.scrollTo(0, 0);
     if (window.innerWidth <= 900) closeSidebar();
+}
+
+function navigateHome() { mostrarPagina('home-section', null); }
+
+// Aba de resultados (feiras e agradecimentos)
+function abrirResultados() { mostrarPagina('resultados-section', 'nav-resultados'); }
+
+// Aba do TCC (PDF)
+function abrirTCC() {
+    mostrarPagina('tcc-section', 'nav-tcc');
+    const url = 'tcc/TCC_EducaTEA.pdf';
+    const leitor = document.getElementById('tcc-leitor');
+    const vazio = document.getElementById('tcc-vazio');
+    const botoes = document.querySelector('.tcc-botoes');
+    const frame = leitor.querySelector('iframe');
+    const mostrar = ok => {
+        leitor.style.display = ok ? '' : 'none';
+        vazio.style.display = ok ? 'none' : '';
+        botoes.style.display = ok ? '' : 'none';
+        if (ok && !frame.src) frame.src = frame.dataset.src;
+    };
+    fetch(url, { method: 'HEAD' }).then(r => mostrar(r.ok)).catch(() => mostrar(location.protocol === 'file:'));
 }
 
 function toggleSubMenu(id, element) {
@@ -1000,32 +1016,16 @@ function carregarJogos(nomeJogo) {
         return;
     }
 
-    document.getElementById('home-section').classList.remove('active');
-    const resSec = document.getElementById('resultados-section');
-    if (resSec) resSec.classList.remove('active');
-    const navRes = document.getElementById('nav-resultados');
-    if (navRes) navRes.classList.remove('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('#nav-resultados, #nav-tcc').forEach(n => n.classList.remove('active'));
     document.getElementById('games-section').classList.add('active');
     document.getElementById('category-name').innerText = "Jogo: " + nomeJogo;
     if (window.innerWidth <= 900) closeSidebar();
 
-    if (bancoMatematica[nomeJogo]) { iniciarMatematica(nomeJogo); return; }
-    if (bancoCiencias[nomeJogo]) { iniciarCiencias(nomeJogo); return; }
+    // Todos os jogos agora rodam no motor novo (jogos-base.js + jogos.js)
+    if (typeof JG !== 'undefined' && JG.abrir(nomeJogo)) return;
 
-    if (nomeJogo === "Monte a Palavra") telaConfigMonte();
-    else if (nomeJogo === "Caça-Palavras") telaCacaPalavras();
-    else if (nomeJogo === "Sílabas Mágicas") telaSilabasMagicas();
-    else if (nomeJogo === "Ditado Visual") telaDitadoVisual();
-    else if (nomeJogo === "Rima Maluca") telaRimaMaluca();
-    else if (nomeJogo === "Qual é a Letra?") telaQualLetra();
-    else if (nomeJogo === "Memória de Palavras") telaMemoriaPalavras();
-    else if (nomeJogo === "Palavra Oculta") telaPalavraOculta();
-    else if (nomeJogo === "Sombras Mágicas") telaSombrasMagicas();
-    else if (nomeJogo === "Classificação de Cores") telaClassificacaoCores();
-    else if (nomeJogo === "Contagem de Objetos") telaContagemObjetos();
-    else if (nomeJogo === "Emoções") telaEmocoes();
-    else if (nomeJogo === "Minha Rotina") telaMinhaRotina();
-    else if (nomeJogo === "Cuidado com o Ambiente") telaCuidadoAmbiente();
+    if (false) { }
     else mostrarMensagem("O jogo '" + nomeJogo + "' está em desenvolvimento.", false);
 }
 
@@ -1092,28 +1092,197 @@ function quebrarStreak() {
 }
 
 // ================= CONQUISTAS =================
+const CONQUISTAS_CATEGORIAS = [
+    { id: 'inicio',  nome: '🌱 Primeiros passos' },
+    { id: 'acertos', nome: '🎯 Acertos' },
+    { id: 'sequencia', nome: '🔥 Sequências' },
+    { id: 'nivel',   nome: '🏆 Níveis e pontos' },
+    { id: 'rodadas', nome: '🏁 Rodadas e estrelas' },
+    { id: 'areas',   nome: '📚 Áreas de estudo' },
+    { id: 'jogos',   nome: '🎲 Jogos especiais' },
+    { id: 'jeito',   nome: '💪 Jeito de aprender' },
+    { id: 'dias',    nome: '📅 Constância' },
+    { id: 'mestres', nome: '🎮 Craques de cada jogo' },
+    { id: 'colecao', nome: '🏛️ Coleção' }
+];
+// Cada conquista tem prog(e) -> [valorAtual, meta]. Quando valorAtual >= meta ela é desbloqueada.
+const _x = e => (e.extras || {});
+const _area = (e, a) => ((_x(e).areas || {})[a] || 0);
+const _jogoRod = (e, j) => ((_x(e).rodadasPorJogo || {})[j] || 0);
+const _jogoAc = (e, j) => (((e.estatisticasJogos || {})[j] || {}).acertos || 0);
 const CONQUISTAS = [
-    { id: 'primeiro_acerto', nome: 'Primeiro Passo', emoji: '🥇', desc: 'Você acertou sua primeira pergunta!', condicao: e => (e.totalAcertos || 0) >= 1 },
-    { id: 'streak_5', nome: 'Sequência de Ouro', emoji: '🔥', desc: '5 acertos seguidos em um jogo!', condicao: e => (e.melhorStreak || 0) >= 5 },
-    { id: 'streak_10', nome: 'Imparável', emoji: '⚡', desc: '10 acertos seguidos em um jogo!', condicao: e => (e.melhorStreak || 0) >= 10 },
-    { id: 'nivel_3', nome: 'Aprendiz Dedicado', emoji: '🌱', desc: 'Alcançou o Nível 3!', condicao: e => (e.nivelAtual || 1) >= 3 },
-    { id: 'nivel_5', nome: 'Explorador', emoji: '🧭', desc: 'Alcançou o Nível 5!', condicao: e => (e.nivelAtual || 1) >= 5 },
-    { id: 'nivel_10', nome: 'Mestre do Saber', emoji: '👑', desc: 'Alcançou o Nível 10!', condicao: e => (e.nivelAtual || 1) >= 10 },
-    { id: 'pontos_250', nome: 'Juntando Estrelas', emoji: '⭐', desc: 'Acumulou 250 pontos!', condicao: e => (e.pontuacaoTotal || 0) >= 250 },
-    { id: 'pontos_500', nome: 'Colecionador de Estrelas', emoji: '🌟', desc: 'Acumulou 500 pontos!', condicao: e => (e.pontuacaoTotal || 0) >= 500 },
-    { id: 'pontos_1000', nome: 'Lenda do EducaTEA', emoji: '🏆', desc: 'Acumulou 1000 pontos!', condicao: e => (e.pontuacaoTotal || 0) >= 1000 },
-    { id: 'jogos_variados', nome: 'Curioso', emoji: '🎲', desc: 'Jogou 5 jogos diferentes!', condicao: e => Object.keys(e.estatisticasJogos || {}).length >= 5 },
-    { id: 'jogos_todos', nome: 'Explorador Completo', emoji: '🗺️', desc: 'Experimentou 10 jogos diferentes!', condicao: e => Object.keys(e.estatisticasJogos || {}).length >= 10 }
+    // Primeiros passos
+    { id: 'primeiro_acerto', cat: 'inicio', nome: 'Primeiro Passo', emoji: '🥇', desc: 'Acertou sua primeira pergunta!', prog: e => [e.totalAcertos || 0, 1] },
+    { id: 'jogos_variados', cat: 'inicio', nome: 'Curioso', emoji: '🎲', desc: 'Jogou 5 jogos diferentes!', prog: e => [Object.keys(e.estatisticasJogos || {}).length, 5] },
+    { id: 'jogos_todos', cat: 'inicio', nome: 'Explorador Completo', emoji: '🗺️', desc: 'Experimentou 10 jogos diferentes!', prog: e => [Object.keys(e.estatisticasJogos || {}).length, 10] },
+    { id: 'jogos_20', cat: 'inicio', nome: 'Aventureiro', emoji: '🧗', desc: 'Experimentou 20 jogos diferentes!', prog: e => [Object.keys(e.estatisticasJogos || {}).length, 20] },
+    { id: 'jogos_30', cat: 'inicio', nome: 'Mestre dos Jogos', emoji: '🎪', desc: 'Experimentou TODOS os 30 jogos!', prog: e => [Object.keys(e.estatisticasJogos || {}).length, 30] },
+    // Acertos
+    { id: 'acertos_25', cat: 'acertos', nome: 'Na Mosca', emoji: '🎯', desc: '25 acertos no total!', prog: e => [e.totalAcertos || 0, 25] },
+    { id: 'acertos_100', cat: 'acertos', nome: 'Cem Acertos', emoji: '💯', desc: '100 acertos no total!', prog: e => [e.totalAcertos || 0, 100] },
+    { id: 'acertos_300', cat: 'acertos', nome: 'Super Aprendiz', emoji: '🚀', desc: '300 acertos no total!', prog: e => [e.totalAcertos || 0, 300] },
+    { id: 'acertos_1000', cat: 'acertos', nome: 'Mestre dos Acertos', emoji: '🎓', desc: '1000 acertos no total!', prog: e => [e.totalAcertos || 0, 1000] },
+    // Sequências
+    { id: 'streak_5', cat: 'sequencia', nome: 'Sequência de Ouro', emoji: '🔥', desc: '5 acertos seguidos!', prog: e => [e.melhorStreak || 0, 5] },
+    { id: 'streak_10', cat: 'sequencia', nome: 'Imparável', emoji: '⚡', desc: '10 acertos seguidos!', prog: e => [e.melhorStreak || 0, 10] },
+    { id: 'streak_15', cat: 'sequencia', nome: 'Cometa', emoji: '☄️', desc: '15 acertos seguidos!', prog: e => [e.melhorStreak || 0, 15] },
+    { id: 'streak_25', cat: 'sequencia', nome: 'Inabalável', emoji: '🛡️', desc: '25 acertos seguidos!', prog: e => [e.melhorStreak || 0, 25] },
+    // Níveis e pontos
+    { id: 'nivel_3', cat: 'nivel', nome: 'Aprendiz Dedicado', emoji: '🌱', desc: 'Chegou ao Nível 3!', prog: e => [e.nivelAtual || 1, 3] },
+    { id: 'nivel_5', cat: 'nivel', nome: 'Explorador', emoji: '🧭', desc: 'Chegou ao Nível 5!', prog: e => [e.nivelAtual || 1, 5] },
+    { id: 'nivel_10', cat: 'nivel', nome: 'Mestre do Saber', emoji: '👑', desc: 'Chegou ao Nível 10!', prog: e => [e.nivelAtual || 1, 10] },
+    { id: 'nivel_15', cat: 'nivel', nome: 'Sábio', emoji: '🦉', desc: 'Chegou ao Nível 15!', prog: e => [e.nivelAtual || 1, 15] },
+    { id: 'nivel_20', cat: 'nivel', nome: 'Gênio', emoji: '🧠', desc: 'Chegou ao Nível 20!', prog: e => [e.nivelAtual || 1, 20] },
+    { id: 'pontos_250', cat: 'nivel', nome: 'Juntando Estrelas', emoji: '⭐', desc: 'Juntou 250 pontos!', prog: e => [e.pontuacaoTotal || 0, 250] },
+    { id: 'pontos_500', cat: 'nivel', nome: 'Colecionador de Estrelas', emoji: '🌟', desc: 'Juntou 500 pontos!', prog: e => [e.pontuacaoTotal || 0, 500] },
+    { id: 'pontos_1000', cat: 'nivel', nome: 'Lenda do EducaTEA', emoji: '🏆', desc: 'Juntou 1000 pontos!', prog: e => [e.pontuacaoTotal || 0, 1000] },
+    { id: 'pontos_2500', cat: 'nivel', nome: 'Chuva de Estrelas', emoji: '🌠', desc: 'Juntou 2500 pontos!', prog: e => [e.pontuacaoTotal || 0, 2500] },
+    { id: 'pontos_5000', cat: 'nivel', nome: 'Constelação', emoji: '🌌', desc: 'Juntou 5000 pontos!', prog: e => [e.pontuacaoTotal || 0, 5000] },
+    // Rodadas e estrelas
+    { id: 'rodada_1', cat: 'rodadas', nome: 'Rodada Completa', emoji: '🏁', desc: 'Terminou a sua primeira rodada!', prog: e => [_x(e).rodadas || 0, 1] },
+    { id: 'rodada_10', cat: 'rodadas', nome: 'Maratonista', emoji: '🏃', desc: 'Terminou 10 rodadas!', prog: e => [_x(e).rodadas || 0, 10] },
+    { id: 'rodada_30', cat: 'rodadas', nome: 'Incansável', emoji: '🏅', desc: 'Terminou 30 rodadas!', prog: e => [_x(e).rodadas || 0, 30] },
+    { id: 'estrela3_1', cat: 'rodadas', nome: 'Três Estrelas', emoji: '🌟', desc: 'Ganhou 3 estrelas em uma rodada!', prog: e => [_x(e).estrelas3 || 0, 1] },
+    { id: 'estrela3_10', cat: 'rodadas', nome: 'Brilhante', emoji: '✨', desc: 'Ganhou 3 estrelas em 10 rodadas!', prog: e => [_x(e).estrelas3 || 0, 10] },
+    { id: 'perfeita_1', cat: 'rodadas', nome: 'Rodada Perfeita', emoji: '💎', desc: 'Acertou tudo de primeira, sem dicas!', prog: e => [_x(e).rodadasPerfeitas || 0, 1] },
+    { id: 'perfeita_5', cat: 'rodadas', nome: 'Diamante', emoji: '💠', desc: '5 rodadas perfeitas!', prog: e => [_x(e).rodadasPerfeitas || 0, 5] },
+    { id: 'perfeita_3_seg', cat: 'rodadas', nome: 'Trio Perfeito', emoji: '🔱', desc: '3 rodadas perfeitas seguidas!', prog: e => [_x(e).melhorPerfeitasSeguidas || 0, 3] },
+    // Áreas de estudo
+    { id: 'palavras_20', cat: 'areas', nome: 'Amigo das Palavras', emoji: '📚', desc: '20 acertos em jogos de Palavras!', prog: e => [_area(e, 'palavras'), 20] },
+    { id: 'palavras_60', cat: 'areas', nome: 'Pequeno Escritor', emoji: '✍️', desc: '60 acertos em jogos de Palavras!', prog: e => [_area(e, 'palavras'), 60] },
+    { id: 'mat_20', cat: 'areas', nome: 'Craque dos Números', emoji: '🔢', desc: '20 acertos em jogos de Matemática!', prog: e => [_area(e, 'matematica'), 20] },
+    { id: 'mat_60', cat: 'areas', nome: 'Matemático', emoji: '📐', desc: '60 acertos em jogos de Matemática!', prog: e => [_area(e, 'matematica'), 60] },
+    { id: 'ciencias_20', cat: 'areas', nome: 'Pequeno Cientista', emoji: '🔬', desc: '20 acertos em jogos de Ciências!', prog: e => [_area(e, 'ciencias'), 20] },
+    { id: 'ciencias_60', cat: 'areas', nome: 'Cientista', emoji: '🧪', desc: '60 acertos em jogos de Ciências!', prog: e => [_area(e, 'ciencias'), 60] },
+    { id: 'areas_todas', cat: 'areas', nome: 'Sabe-Tudo', emoji: '🌍', desc: '15 acertos em cada uma das 3 áreas!', prog: e => [Math.min(_area(e, 'palavras'), _area(e, 'matematica'), _area(e, 'ciencias')), 15] },
+    // Jogos especiais
+    { id: 'caca_3', cat: 'jogos', nome: 'Detetive de Palavras', emoji: '🕵️', desc: 'Terminou 3 Caça-Palavras!', prog: e => [_jogoRod(e, 'Caça-Palavras'), 3] },
+    { id: 'memoria_3', cat: 'jogos', nome: 'Memória de Elefante', emoji: '🐘', desc: 'Terminou 3 jogos da Memória de Palavras!', prog: e => [_jogoRod(e, 'Memória de Palavras'), 3] },
+    { id: 'emocoes_10', cat: 'jogos', nome: 'Coração Atento', emoji: '💗', desc: '10 acertos em Emoções!', prog: e => [_jogoAc(e, 'Emoções'), 10] },
+    { id: 'rotina_3', cat: 'jogos', nome: 'Rei da Rotina', emoji: '⏱️', desc: 'Organizou 3 rotinas!', prog: e => [_jogoRod(e, 'Minha Rotina'), 3] },
+    { id: 'ambiente_10', cat: 'jogos', nome: 'Guardião do Planeta', emoji: '🌎', desc: '10 acertos em Cuidado com o Ambiente!', prog: e => [_jogoAc(e, 'Cuidado com o Ambiente'), 10] },
+    { id: 'sombras_3', cat: 'jogos', nome: 'Caçador de Sombras', emoji: '🌑', desc: 'Completou 3 jogos de Sombras Mágicas!', prog: e => [_jogoRod(e, 'Sombras Mágicas'), 3] },
+    // Jeito de aprender
+    { id: 'dica_1', cat: 'jeito', nome: 'Pedir Ajuda é Legal', emoji: '🤝', desc: 'Usou uma dica. Pedir ajuda faz parte de aprender!', prog: e => [_x(e).dicas || 0, 1] },
+    { id: 'recuperada_1', cat: 'jeito', nome: 'Não Desisto', emoji: '💪', desc: 'Errou, tentou de novo e acertou!', prog: e => [_x(e).recuperadas || 0, 1] },
+    { id: 'recuperada_20', cat: 'jeito', nome: 'Persistente', emoji: '🧗‍♀️', desc: 'Tentou de novo e acertou 20 vezes!', prog: e => [_x(e).recuperadas || 0, 20] },
+    { id: 'sem_dica_30', cat: 'jeito', nome: 'Pensador', emoji: '🤔', desc: '30 acertos sem usar dicas!', prog: e => [_x(e).semDica || 0, 30] },
+    // Constância
+    { id: 'dias_3', cat: 'dias', nome: 'Voltou!', emoji: '📅', desc: 'Jogou 3 dias seguidos!', prog: e => [(typeof JG !== 'undefined' ? JG.diasSeguidos() : 0), 3] },
+    { id: 'dias_7', cat: 'dias', nome: 'Semana de Estudos', emoji: '🗓️', desc: 'Jogou 7 dias seguidos!', prog: e => [(typeof JG !== 'undefined' ? JG.diasSeguidos() : 0), 7] },
+    { id: 'dias_10', cat: 'dias', nome: 'Rotina de Aprendizado', emoji: '⏰', desc: 'Jogou em 10 dias diferentes!', prog: e => [(_x(e).dias || []).length, 10] }
 ];
 
+// ---------- conquistas extras (mais metas em cada categoria) ----------
+const _jogosLista = [
+    ['Monte a Palavra','🔤'],['Caça-Palavras','🔎'],['Sílabas Mágicas','🪄'],['Ditado Visual','🖼️'],['Rima Maluca','🎵'],['Qual é a Letra?','🅰️'],
+    ['Memória de Palavras','🃏'],['Palavra Oculta','🕵️‍♀️'],['Sombras Mágicas','🌑'],
+    ['Soma Criativa','➕'],['Subtração Divertida','➖'],['Contagem','🔢'],['Qual é o Maior?','📊'],['Sequência','➡️'],['Formas Geométricas','🔷'],
+    ['Relógio Digital','⏰'],['Pares e Ímpares','👯'],['Classificação de Cores','🎨'],['Contagem de Objetos','🔟'],
+    ['Ciclo da Água','💧'],['Animais e Habitats','🦁'],['Corpo Humano','🫀'],['Reciclagem','♻️'],['Sistema Solar','🪐'],['Estados da Matéria','🧊'],
+    ['Plantas','🌿'],['Sentidos','👂'],['Emoções','😊'],['Minha Rotina','🗓️'],['Cuidado com o Ambiente','🌍']
+];
+const _novas = [
+    // acertos / sequências / níveis / pontos
+    ['acertos_500', 'acertos', 'Gigante do Saber', '🦁', '500 acertos no total!', e => [e.totalAcertos || 0, 500]],
+    ['acertos_2000', 'acertos', 'Lenda dos Acertos', '🐉', '2000 acertos no total!', e => [e.totalAcertos || 0, 2000]],
+    ['acertos_50', 'acertos', 'Cinquentinha', '🎈', '50 acertos no total!', e => [e.totalAcertos || 0, 50]],
+    ['streak_3', 'sequencia', 'Aquecendo', '🌤️', '3 acertos seguidos!', e => [e.melhorStreak || 0, 3]],
+    ['streak_40', 'sequencia', 'Fogo Eterno', '🌋', '40 acertos seguidos!', e => [e.melhorStreak || 0, 40]],
+    ['streak_50', 'sequencia', 'Invencível', '🦸', '50 acertos seguidos!', e => [e.melhorStreak || 0, 50]],
+    ['nivel_2', 'nivel', 'Subindo!', '🪜', 'Chegou ao Nível 2!', e => [e.nivelAtual || 1, 2]],
+    ['nivel_25', 'nivel', 'Mago do Saber', '🧙', 'Chegou ao Nível 25!', e => [e.nivelAtual || 1, 25]],
+    ['nivel_30', 'nivel', 'Mestre Supremo', '🏯', 'Chegou ao Nível 30!', e => [e.nivelAtual || 1, 30]],
+    ['pontos_100', 'nivel', 'Primeiras Estrelinhas', '✨', 'Juntou 100 pontos!', e => [e.pontuacaoTotal || 0, 100]],
+    ['pontos_10000', 'nivel', 'Tesouro Real', '💰', 'Juntou 10000 pontos!', e => [e.pontuacaoTotal || 0, 10000]],
+    ['pontos_25000', 'nivel', 'Universo de Pontos', '🪐', 'Juntou 25000 pontos!', e => [e.pontuacaoTotal || 0, 25000]],
+    // rodadas
+    ['rodada_5', 'rodadas', 'Pegando o Ritmo', '🎶', 'Terminou 5 rodadas!', e => [_x(e).rodadas || 0, 5]],
+    ['rodada_50', 'rodadas', 'Cinquentão', '🏔️', 'Terminou 50 rodadas!', e => [_x(e).rodadas || 0, 50]],
+    ['rodada_100', 'rodadas', 'Centenário', '🏰', 'Terminou 100 rodadas!', e => [_x(e).rodadas || 0, 100]],
+    ['estrela3_25', 'rodadas', 'Céu Estrelado', '🌃', 'Ganhou 3 estrelas em 25 rodadas!', e => [_x(e).estrelas3 || 0, 25]],
+    ['estrela3_50', 'rodadas', 'Galáxia', '🌌', 'Ganhou 3 estrelas em 50 rodadas!', e => [_x(e).estrelas3 || 0, 50]],
+    ['perfeita_10', 'rodadas', 'Cristal', '🔮', '10 rodadas perfeitas!', e => [_x(e).rodadasPerfeitas || 0, 10]],
+    ['perfeita_25', 'rodadas', 'Joia Rara', '👑', '25 rodadas perfeitas!', e => [_x(e).rodadasPerfeitas || 0, 25]],
+    ['perfeita_5_seg', 'rodadas', 'Sem Falhas', '🎖️', '5 rodadas perfeitas seguidas!', e => [_x(e).melhorPerfeitasSeguidas || 0, 5]],
+    // áreas
+    ['palavras_120', 'areas', 'Mestre das Palavras', '📖', '120 acertos em jogos de Palavras!', e => [_area(e, 'palavras'), 120]],
+    ['mat_120', 'areas', 'Mestre dos Números', '🧮', '120 acertos em jogos de Matemática!', e => [_area(e, 'matematica'), 120]],
+    ['ciencias_120', 'areas', 'Mestre da Ciência', '🔭', '120 acertos em jogos de Ciências!', e => [_area(e, 'ciencias'), 120]],
+    ['palavras_5', 'areas', 'Primeiras Letras', '🔡', '5 acertos em jogos de Palavras!', e => [_area(e, 'palavras'), 5]],
+    ['mat_5', 'areas', 'Primeiras Contas', '1️⃣', '5 acertos em jogos de Matemática!', e => [_area(e, 'matematica'), 5]],
+    ['ciencias_5', 'areas', 'Primeira Descoberta', '💡', '5 acertos em jogos de Ciências!', e => [_area(e, 'ciencias'), 5]],
+    ['areas_todas_50', 'areas', 'Gênio Completo', '🌟', '50 acertos em cada uma das 3 áreas!', e => [Math.min(_area(e, 'palavras'), _area(e, 'matematica'), _area(e, 'ciencias')), 50]],
+    // jeito de aprender
+    ['dica_10', 'jeito', 'Boa Equipe', '🫶', 'Usou 10 dicas. Pedir ajuda é coisa de gente esperta!', e => [_x(e).dicas || 0, 10]],
+    ['dica_50', 'jeito', 'Sempre Aprendendo', '📘', 'Usou 50 dicas!', e => [_x(e).dicas || 0, 50]],
+    ['recuperada_5', 'jeito', 'Quase Lá', '🎯', 'Errou, tentou de novo e acertou 5 vezes!', e => [_x(e).recuperadas || 0, 5]],
+    ['recuperada_50', 'jeito', 'Gigante da Persistência', '🏔️', 'Tentou de novo e acertou 50 vezes!', e => [_x(e).recuperadas || 0, 50]],
+    ['sem_dica_10', 'jeito', 'Confiante', '😎', '10 acertos sem usar dicas!', e => [_x(e).semDica || 0, 10]],
+    ['sem_dica_100', 'jeito', 'Mente Afiada', '🧩', '100 acertos sem usar dicas!', e => [_x(e).semDica || 0, 100]],
+    ['sem_dica_300', 'jeito', 'Cérebro de Ouro', '🥇', '300 acertos sem usar dicas!', e => [_x(e).semDica || 0, 300]],
+    ['erros_10', 'jeito', 'Errar é Aprender', '🌈', 'Errou 10 vezes e continuou tentando. Errar faz parte!', e => [_x(e).erros || 0, 10]],
+    ['erros_50', 'jeito', 'Coragem de Tentar', '🦁', 'Continuou tentando depois de 50 erros. Que coragem!', e => [_x(e).erros || 0, 50]],
+    // constância
+    ['dia_1', 'dias', 'Primeiro Dia', '🌅', 'Jogou o primeiro dia!', e => [(_x(e).dias || []).length, 1]],
+    ['dias_14', 'dias', 'Quinzena de Estudos', '🌗', 'Jogou 14 dias seguidos!', e => [(typeof JG !== 'undefined' ? JG.diasSeguidos() : 0), 14]],
+    ['dias_30', 'dias', 'Mês Inteiro', '🌕', 'Jogou 30 dias seguidos!', e => [(typeof JG !== 'undefined' ? JG.diasSeguidos() : 0), 30]],
+    ['dias_20t', 'dias', 'Visita Fiel', '🏡', 'Jogou em 20 dias diferentes!', e => [(_x(e).dias || []).length, 20]],
+    ['dias_50t', 'dias', 'Veterano', '🎖️', 'Jogou em 50 dias diferentes!', e => [(_x(e).dias || []).length, 50]],
+    ['manha_1', 'dias', 'Madrugador', '🐦', 'Jogou antes das 9 da manhã!', e => [_x(e).manha ? 1 : 0, 1]],
+    ['noite_1', 'dias', 'Coruja', '🦉', 'Jogou depois das 19 horas!', e => [_x(e).noite ? 1 : 0, 1]],
+    ['fds_1', 'dias', 'Fim de Semana Divertido', '🎈', 'Jogou no sábado ou no domingo!', e => [_x(e).fimSemana ? 1 : 0, 1]],
+    // jogos especiais
+    ['caca_10', 'jogos', 'Mestre dos Caça-Palavras', '🔍', 'Terminou 10 Caça-Palavras!', e => [_jogoRod(e, 'Caça-Palavras'), 10]],
+    ['memoria_10', 'jogos', 'Memória de Ouro', '🏆', 'Terminou 10 jogos da Memória de Palavras!', e => [_jogoRod(e, 'Memória de Palavras'), 10]],
+    ['emocoes_30', 'jogos', 'Mestre das Emoções', '🫂', '30 acertos em Emoções!', e => [_jogoAc(e, 'Emoções'), 30]],
+    ['ambiente_30', 'jogos', 'Herói do Planeta', '🦸‍♀️', '30 acertos em Cuidado com o Ambiente!', e => [_jogoAc(e, 'Cuidado com o Ambiente'), 30]],
+    ['rotina_10', 'jogos', 'Mestre da Rotina', '📆', 'Organizou 10 rotinas!', e => [_jogoRod(e, 'Minha Rotina'), 10]],
+    ['relogio_20', 'jogos', 'Senhor do Tempo', '⌛', '20 acertos no Relógio Digital!', e => [_jogoAc(e, 'Relógio Digital'), 20]],
+    ['soma_30', 'jogos', 'Rei da Soma', '➕', '30 acertos na Soma Criativa!', e => [_jogoAc(e, 'Soma Criativa'), 30]],
+    ['subtracao_30', 'jogos', 'Rei da Subtração', '➖', '30 acertos na Subtração Divertida!', e => [_jogoAc(e, 'Subtração Divertida'), 30]],
+    ['cores_5', 'jogos', 'Arco-Íris', '🌈', 'Terminou 5 jogos de Classificação de Cores!', e => [_jogoRod(e, 'Classificação de Cores'), 5]],
+    ['reciclagem_20', 'jogos', 'Amigo da Natureza', '♻️', '20 acertos em Reciclagem!', e => [_jogoAc(e, 'Reciclagem'), 20]],
+    ['solar_20', 'jogos', 'Astronauta', '🚀', '20 acertos no Sistema Solar!', e => [_jogoAc(e, 'Sistema Solar'), 20]]
+];
+_novas.forEach(([id, cat, nome, emoji, desc, prog]) => CONQUISTAS.push({ id, cat, nome, emoji, desc, prog }));
+// um "craque" para cada um dos 30 jogos
+_jogosLista.forEach(([j, em]) => CONQUISTAS.push({ id: 'craque_' + j.normalize('NFD').replace(/[^a-zA-Z0-9]/g, ''), cat: 'mestres', nome: 'Craque: ' + j, emoji: em, desc: `Terminou 3 rodadas de ${j}!`, prog: e => [_jogoRod(e, j), 3] }));
+// coleção (conquistas que contam conquistas)
+[[10, 'Colecionador Iniciante', '📦'], [25, 'Colecionador', '🗃️'], [50, 'Grande Colecionador', '🏛️'], [75, 'Caçador de Troféus', '🏆'], [100, 'Lenda das Conquistas', '👑']].forEach(([n, nome, em]) =>
+    CONQUISTAS.push({ id: 'colecao_' + n, cat: 'colecao', nome, emoji: em, desc: `Desbloqueou ${n} conquistas!`, prog: e => [(e.conquistas || []).filter(i => !String(i).startsWith('colecao_')).length, n] }));
+// nível do troféu (bronze, prata, ouro, diamante) conforme a posição na série
+(function () {
+    const series = {};
+    CONQUISTAS.forEach(c => { const k = c.cat === 'mestres' ? 'mestres' : c.id.replace(/_[^_]*$/, ''); (series[k] = series[k] || []).push(c); });
+    Object.values(series).forEach(l => {
+        l.sort((a, b) => a.prog({})[1] - b.prog({})[1]);
+        l.forEach((c, i) => { c.tier = l.length === 1 ? 2 : Math.min(4, 1 + Math.floor(i * 4 / l.length)); });
+    });
+})();
+const TIERS = { 1: ['Bronze', '🥉'], 2: ['Prata', '🥈'], 3: ['Ouro', '🥇'], 4: ['Diamante', '💎'] };
+
+CONQUISTAS.forEach(c => { c.condicao = e => { const p = c.prog(e); return p[0] >= p[1]; }; });
+
+const _filaConq = [];
+let _mostrandoConq = false;
 function mostrarConquista(conquista) {
+    _filaConq.push(conquista);
+    if (!_mostrandoConq) _proximaConq();
+}
+function _proximaConq() {
+    const conquista = _filaConq.shift();
+    if (!conquista) { _mostrandoConq = false; return; }
+    _mostrandoConq = true;
+    const t = TIERS[conquista.tier || 1];
     const popup = document.createElement('div');
     popup.className = 'conquista-popup';
+    popup.setAttribute('role', 'status');
     popup.innerHTML = `
         <span class="conquista-emoji-grande">${conquista.emoji}</span>
         <div>
             <strong>Conquista desbloqueada!</strong>
-            <strong>${conquista.nome}</strong>
+            <strong>${conquista.nome} ${t[1]}</strong>
             <p>${conquista.desc}</p>
         </div>`;
     document.body.appendChild(popup);
@@ -1125,32 +1294,76 @@ function mostrarConquista(conquista) {
     setTimeout(() => tocarSom('acerto'), 250);
     setTimeout(() => {
         popup.classList.remove('visivel');
-        setTimeout(() => popup.remove(), 500);
-    }, 4200);
+        setTimeout(() => { popup.remove(); _proximaConq(); }, 450);
+    }, 3600);
 }
 
 function checarConquistas() {
     estadoAtual.conquistas = estadoAtual.conquistas || [];
-    CONQUISTAS.forEach(c => {
-        if (!estadoAtual.conquistas.includes(c.id) && c.condicao(estadoAtual)) {
-            estadoAtual.conquistas.push(c.id);
-            mostrarConquista(c);
-        }
-    });
+    const ex = (estadoAtual.extras = estadoAtual.extras || {});
+    ex.datasConquistas = ex.datasConquistas || {};
+    let mudou = true, voltas = 0;
+    while (mudou && voltas++ < 5) { // repete: conquistas da coleção dependem das outras
+        mudou = false;
+        CONQUISTAS.forEach(c => {
+            if (!estadoAtual.conquistas.includes(c.id) && c.condicao(estadoAtual)) {
+                estadoAtual.conquistas.push(c.id);
+                ex.datasConquistas[c.id] = Date.now();
+                mostrarConquista(c);
+                mudou = true;
+            }
+        });
+    }
     salvarProgresso();
 }
+
+let _filtroConq = 'todas';
+function filtrarConquistas(f) { _filtroConq = f; renderConquistas(); }
+function _dataBR(ms) { const d = new Date(ms); return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0'); }
 
 function renderConquistas() {
     const lista = document.getElementById('conquistas-lista');
     if (!lista) return;
     const desbloqueadas = estadoAtual.conquistas || [];
-    lista.innerHTML = CONQUISTAS.map(c => {
-        const ok = desbloqueadas.includes(c.id);
-        return `<div class="conquista-item ${ok ? 'desbloqueada' : 'bloqueada'}">
-            <span class="conquista-emoji">${ok ? c.emoji : '🔒'}</span>
-            <div><strong>${c.nome}</strong><p>${c.desc}</p></div>
-        </div>`;
-    }).join('');
+    const datas = ((estadoAtual.extras || {}).datasConquistas) || {};
+    const total = CONQUISTAS.length, pctGeral = Math.round(desbloqueadas.length / total * 100);
+    // próximas: as não conquistadas mais adiantadas
+    const proximas = CONQUISTAS.filter(c => !desbloqueadas.includes(c.id)).map(c => { const p = c.prog(estadoAtual); return { c, p, pct: Math.min(p[0], p[1]) / p[1] }; })
+        .filter(x => x.pct > 0).sort((a, b) => b.pct - a.pct).slice(0, 3);
+    let html = `<div class="conq-resumo"><div class="conq-resumo-topo"><strong>${desbloqueadas.length} de ${total}</strong><span>${pctGeral}%</span></div>
+        <div class="conquista-prog conq-geral"><i style="width:${pctGeral}%"></i></div></div>`;
+    if (proximas.length && _filtroConq !== 'feitas') {
+        html += `<h4 class="conquista-cat">🎯 Quase lá!</h4>` + proximas.map(x => `<div class="conquista-item bloqueada quase tier-${x.c.tier || 1}">
+            <span class="conquista-emoji">${x.c.emoji}</span><div class="conquista-texto"><strong>${x.c.nome}</strong><p>${x.c.desc}</p>
+            <div class="conquista-prog"><i style="width:${Math.round(x.pct * 100)}%"></i></div><small>${Math.min(x.p[0], x.p[1])}/${x.p[1]}</small></div></div>`).join('');
+    }
+    html += `<div class="conq-filtros" role="tablist">${[['todas', 'Todas'], ['faltam', 'Faltam'], ['feitas', 'Conquistadas']].map(([k, n]) =>
+        `<button type="button" class="conq-filtro ${_filtroConq === k ? 'ativo' : ''}" onclick="filtrarConquistas('${k}')">${n}</button>`).join('')}</div>`;
+    CONQUISTAS_CATEGORIAS.forEach(cat => {
+        const todos = CONQUISTAS.filter(c => c.cat === cat.id);
+        if (!todos.length) return;
+        const feitas = todos.filter(c => desbloqueadas.includes(c.id)).length;
+        let itens = todos.slice();
+        if (_filtroConq === 'faltam') itens = itens.filter(c => !desbloqueadas.includes(c.id));
+        if (_filtroConq === 'feitas') itens = itens.filter(c => desbloqueadas.includes(c.id));
+        if (!itens.length) return;
+        itens.sort((a, b) => a.prog({})[1] - b.prog({})[1]);
+        html += `<h4 class="conquista-cat">${cat.nome} <span>${feitas}/${todos.length}</span></h4>`;
+        html += itens.map(c => {
+            const ok = desbloqueadas.includes(c.id);
+            const p = c.prog(estadoAtual);
+            const atual = Math.min(p[0], p[1]);
+            const pct = Math.round((atual / p[1]) * 100);
+            const t = TIERS[c.tier || 1];
+            return `<div class="conquista-item ${ok ? 'desbloqueada' : 'bloqueada'} tier-${c.tier || 1}">
+                <span class="conquista-emoji">${ok ? c.emoji : '🔒'}</span>
+                <div class="conquista-texto"><strong>${c.nome}</strong> <span class="conq-tier" title="${t[0]}">${t[1]}</span><p>${c.desc}</p>
+                ${ok ? (datas[c.id] ? `<small>✅ Conquistada em ${_dataBR(datas[c.id])}</small>` : '<small>✅ Conquistada</small>') : `<div class="conquista-prog" aria-label="${atual} de ${p[1]}"><i style="width:${pct}%"></i></div><small>${atual}/${p[1]}</small>`}
+                </div>
+            </div>`;
+        }).join('');
+    });
+    lista.innerHTML = html;
     const contador = document.getElementById('conquistas-contador');
     if (contador) contador.innerText = `(${desbloqueadas.length}/${CONQUISTAS.length})`;
 }
@@ -1221,1429 +1434,7 @@ function reiniciarJogoAtual() {
     if (nomeJogo && nomeJogo !== "Jogo") { carregarJogo(nomeJogo); mostrarMensagem("🔄 Jogo reiniciado!", true); }
 }
 
-// ================= JOGOS DE MATEMÁTICA (COM SISTEMA ANTI-REPETIÇÃO) =================
-function iniciarMatematica(tipo) {
-    mathOpcaoSelecionada = null;
-    const lista = bancoMatematica[tipo];
-    if (!lista || lista.length === 0) { mostrarMensagem(`Nenhum dado disponível para "${tipo}".`, false); return; }
-    
-    // Usa o sistema anti-repetição
-    const item = getProximaPergunta(tipo, lista);
-    mathRespostaCorreta = item.resposta;
-
-    let areaInteracao = "";
-    if (item.opcoes && item.opcoes.length > 0) {
-        areaInteracao = `<div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
-            ${item.opcoes.map((opt, idx) => `<button class="btn-opcao-math" data-valor="${opt}" style="padding: 15px 25px; font-size: 1.5rem; cursor: pointer; background: var(--bg-hover); color: var(--accent-color); border: 2px solid var(--accent-color); border-radius: 10px; font-weight: bold;">${opt}</button>`).join('')}
-        </div><input type="hidden" id="input-math">`;
-    } else {
-        areaInteracao = `<div style="margin-top: 20px;"><input type="number" id="input-math" placeholder="?" style="width: 120px; font-size: 2.5rem; text-align: center; border-radius: 10px; border: 3px solid var(--accent-color); background: var(--bg-card); color: var(--text-primary); padding: 10px;"></div>`;
-    }
-
-    // Mostra quantas perguntas faltam
-    const historico = estadoAtual.historicoPerguntas[tipo] || [];
-    const restantes = lista.length - historico.length;
-    const progressoTexto = restantes > 0 ? `📊 Faltam ${restantes} perguntas para completar o ciclo!` : `🎉 Você já respondeu todas! Recomeçando!`;
-
-    document.getElementById('games-container').innerHTML = `
-        <div class="jogo-wrapper">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color: var(--accent-color); margin-bottom: 0;">${tipo}</h2>
-                <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                    ${progressoTexto}
-                </div>
-            </div>
-            <div style="background: var(--bg-hover); padding: 30px; border-radius: 20px; margin-bottom: 25px;">
-                <p style="font-size: 1.4rem; margin-bottom: 15px;">${item.pergunta}</p>
-                <div style="font-size: 3.5rem; line-height: 1.2; color: var(--accent-color);">${item.visual || ''}</div>
-            </div>
-            ${areaInteracao}
-            <div style="margin-top: 40px;">
-                <button class="btn-verificar" onclick="verificarRespostaMatematica('${tipo}')">✅ VERIFICAR RESPOSTA</button>
-                <br><button class="btn-voltar" onclick="iniciarMatematica('${tipo}')" style="margin-top: 15px;">🔄 Próximo desafio</button>
-            </div>
-        </div>`;
-
-    if (item.opcoes && item.opcoes.length > 0) {
-        setTimeout(() => {
-            document.querySelectorAll('.btn-opcao-math').forEach(btn => {
-                btn.onclick = function () {
-                    document.querySelectorAll('.btn-opcao-math').forEach(b => { b.style.background = "var(--bg-hover)"; b.style.color = "var(--accent-color)"; });
-                    this.style.background = "var(--accent-color)"; this.style.color = "white";
-                    const inputMath = document.getElementById('input-math');
-                    if (inputMath) inputMath.value = this.getAttribute('data-valor');
-                    mathOpcaoSelecionada = this.getAttribute('data-valor');
-                };
-            });
-        }, 100);
-    }
-}
-
-function verificarRespostaMatematica(tipo) {
-    const input = document.getElementById('input-math');
-    let respostaDada = input ? input.value : mathOpcaoSelecionada;
-    if (!respostaDada && respostaDada !== 0) { mostrarMensagem("Escolha ou digite uma resposta primeiro!", false); return; }
-    if (!isNaN(respostaDada) && respostaDada !== "") respostaDada = parseFloat(respostaDada);
-    if (respostaDada == mathRespostaCorreta) {
-        registrarAcerto(tipo, "ACERTO_DIFICIL", 0);
-        salvarProgresso(); // Salva o histórico atualizado
-        setTimeout(() => { iniciarMatematica(tipo); }, 1500);
-    } else { mostrarMensagem(`💡 A resposta correta é ${mathRespostaCorreta}.`, false); }
-}
-
-// ================= JOGOS DE CIÊNCIAS (COM SISTEMA ANTI-REPETIÇÃO) =================
-function iniciarCiencias(tipo) {
-    cienciaOpcaoSelecionada = null;
-    const lista = bancoCiencias[tipo];
-    if (!lista || lista.length === 0) { mostrarMensagem(`Nenhum dado disponível para "${tipo}".`, false); return; }
-    
-    // Usa o sistema anti-repetição
-    const item = getProximaPergunta(tipo, lista);
-    cienciaRespostaCorreta = item.resposta;
-
-    let areaInteracao = "";
-    if (item.opcoes && item.opcoes.length > 0) {
-        areaInteracao = `<div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
-            ${item.opcoes.map((opt, idx) => `<button class="btn-opcao-ciencia" data-valor="${opt}" style="padding: 15px 25px; font-size: 1.3rem; cursor: pointer; background: var(--bg-hover); color: var(--accent-color); border: 2px solid var(--accent-color); border-radius: 10px; font-weight: bold;">${opt}</button>`).join('')}
-        </div><input type="hidden" id="input-ciencia">`;
-    } else {
-        areaInteracao = `<div style="margin-top: 20px;"><input type="text" id="input-ciencia" placeholder="?" style="width: 200px; font-size: 1.5rem; text-align: center; border-radius: 10px; border: 3px solid var(--accent-color); background: var(--bg-card); color: var(--text-primary); padding: 10px;"></div>`;
-    }
-
-    const historico = estadoAtual.historicoPerguntas[tipo] || [];
-    const restantes = lista.length - historico.length;
-    const progressoTexto = restantes > 0 ? `📊 Faltam ${restantes} perguntas para completar o ciclo!` : `🎉 Você já respondeu todas! Recomeçando!`;
-
-    document.getElementById('games-container').innerHTML = `
-        <div class="jogo-wrapper">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color: var(--accent-color); margin-bottom: 0;">${tipo}</h2>
-                <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                    ${progressoTexto}
-                </div>
-            </div>
-            <div style="background: var(--bg-hover); padding: 30px; border-radius: 20px; margin-bottom: 25px;">
-                <div style="font-size: 4rem; margin-bottom: 15px;">${item.visual || '🔬'}</div>
-                <p style="font-size: 1.4rem;">${item.pergunta}</p>
-            </div>
-            ${areaInteracao}
-            <div style="margin-top: 40px;">
-                <button class="btn-verificar" onclick="verificarRespostaCiencia('${tipo}')">✅ VERIFICAR RESPOSTA</button>
-                <br><button class="btn-voltar" onclick="iniciarCiencias('${tipo}')" style="margin-top: 15px;">🔄 Próximo desafio</button>
-            </div>
-        </div>`;
-
-    if (item.opcoes && item.opcoes.length > 0) {
-        setTimeout(() => {
-            document.querySelectorAll('.btn-opcao-ciencia').forEach(btn => {
-                btn.onclick = function () {
-                    document.querySelectorAll('.btn-opcao-ciencia').forEach(b => { b.style.background = "var(--bg-hover)"; b.style.color = "var(--accent-color)"; });
-                    this.style.background = "var(--accent-color)"; this.style.color = "white";
-                    const inputCiencia = document.getElementById('input-ciencia');
-                    if (inputCiencia) inputCiencia.value = this.getAttribute('data-valor');
-                    cienciaOpcaoSelecionada = this.getAttribute('data-valor');
-                };
-            });
-        }, 100);
-    }
-}
-
-function verificarRespostaCiencia(tipo) {
-    const input = document.getElementById('input-ciencia');
-    let respostaDada = input ? input.value : cienciaOpcaoSelecionada;
-    if (!respostaDada && respostaDada !== 0 && respostaDada !== "") { mostrarMensagem("Escolha ou digite uma resposta primeiro!", false); return; }
-    const respostaNormalizada = String(respostaDada).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const respostaCorretaNormalizada = String(cienciaRespostaCorreta).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (respostaNormalizada === respostaCorretaNormalizada) {
-        registrarAcerto(tipo, "ACERTO_DIFICIL", 0);
-        salvarProgresso();
-        setTimeout(() => { iniciarCiencias(tipo); }, 1500);
-    } else { mostrarMensagem(`💡 A resposta correta é ${cienciaRespostaCorreta}.`, false); }
-}
-
-// ================= CAÇA-PALAVRAS =================
-const DIREÇÕES = [
-    { dr: 0, dc: 1, nome: "horizontal→" },
-    { dr: 0, dc: -1, nome: "horizontal←" },
-    { dr: 1, dc: 0, nome: "vertical↓" },
-    { dr: -1, dc: 0, nome: "vertical↑" },
-    { dr: 1, dc: 1, nome: "diagonal ↘" },
-    { dr: -1, dc: -1, nome: "diagonal ↖" },
-    { dr: 1, dc: -1, nome: "diagonal ↙" },
-    { dr: -1, dc: 1, nome: "diagonal ↗" }
-];
-
-function posicionarPalavraNoGrid(grid, palavra, tamanho) {
-    for (let tentativa = 0; tentativa < 200; tentativa++) {
-        const dir = DIREÇÕES[Math.floor(Math.random() * DIREÇÕES.length)];
-        const maxRow = (dir.dr === 1) ? tamanho - palavra.length : (dir.dr === -1) ? palavra.length - 1 : tamanho - 1;
-        const maxCol = (dir.dc === 1) ? tamanho - palavra.length : (dir.dc === -1) ? palavra.length - 1 : tamanho - 1;
-        if (maxRow < 0 || maxCol < 0) continue;
-
-        const row = Math.floor(Math.random() * (maxRow + 1));
-        const col = Math.floor(Math.random() * (maxCol + 1));
-        
-        let valido = true;
-        for (let i = 0; i < palavra.length; i++) {
-            const r = row + i * dir.dr;
-            const c = col + i * dir.dc;
-            if (grid[r][c] !== '' && grid[r][c] !== palavra[i]) {
-                valido = false;
-                break;
-            }
-        }
-        if (valido) {
-            for (let i = 0; i < palavra.length; i++) {
-                const r = row + i * dir.dr;
-                const c = col + i * dir.dc;
-                grid[r][c] = palavra[i];
-            }
-            return true;
-        }
-    }
-    return false;
-}
-
-function telaCacaPalavras() {
-    const palavrasTema = {
-        1: { tema: "🐾 Animais", palavras: ["CACHORRO", "GATO", "PEIXE", "PASSARO", "VACA", "CAVALO", "COELHO", "MACACO", "ELEFANTE", "GIRAFA", "LEAO", "TIGRE", "ZEBRA", "RINOCERONTE", "HIPOPOTAMO"] },
-        2: { tema: "🍎 Frutas", palavras: ["BANANA", "MACA", "LARANJA", "UVA", "MAMAO", "ABACAXI", "MORANGO", "PERA", "MELANCIA", "LIMÃO", "GOIABA", "CAJU", "JACA", "CARAMBOLA", "PITANGA"] },
-        3: { tema: "📚 Escola", palavras: ["LIVRO", "CADERNO", "LAPIS", "BORRACHA", "MOCHILA", "PROFESSOR", "ALUNO", "QUADRO", "GIZ", "TESOURA", "REGUA", "COMPASSO", "TRANSFERIDOR", "APONTADOR", "COLAGEM"] }
-    };
-    
-    const nivel = Math.min(estadoAtual.nivelAtual, 3);
-    const temaAtual = palavrasTema[nivel];
-    const palavraBuscar = temaAtual.palavras[Math.floor(Math.random() * temaAtual.palavras.length)];
-    
-    let gridSize = 10;
-    if (nivel === 2) gridSize = 12;
-    if (nivel === 3) gridSize = 14;
-    
-    let grid = Array(gridSize).fill().map(() => Array(gridSize).fill(''));
-    posicionarPalavraNoGrid(grid, palavraBuscar, gridSize);
-    
-    const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
-            if (grid[i][j] === '') grid[i][j] = letras[Math.floor(Math.random() * letras.length)];
-        }
-    }
-    
-    estadoAtual.jogoCacaAtual = { grid, palavraBuscar, selecionadas: [] };
-    
-    // 🔧 Cálculo dinâmico do tamanho da célula para caber na tela
-    const larguraDisponivel = Math.min(window.innerWidth - 40, 720);
-    const espacamento = 4;
-    const tamanhoCelula = Math.max(22, Math.floor((larguraDisponivel - (gridSize - 1) * espacamento) / gridSize));
-    const tamanhoFonte = Math.max(0.65, Math.min(1.1, tamanhoCelula / 38));
-    
-    let html = `<div class="jogo-wrapper">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-            <h2 style="color: var(--accent-color); margin: 0;">🔍 Caça-Palavras</h2>
-            <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                <span>⭐ Nível ${nivel}/3</span>
-            </div>
-        </div>
-        <p>Tema: <strong>${temaAtual.tema}</strong></p>
-        <p>Encontre a palavra: <strong style="color: var(--accent-color); font-size: 1.3rem; word-break: break-word;">${palavraBuscar}</strong></p>
-        <div id="grid-caca" style="
-            display: grid;
-            grid-template-columns: repeat(${gridSize}, ${tamanhoCelula}px);
-            gap: ${espacamento}px;
-            justify-content: center;
-            margin: 20px auto;
-            user-select: none;
-            max-width: 100%;
-            overflow-x: auto;
-            padding: 4px;
-        ">`;
-    
-    for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
-            html += `<div class="letra-caca" data-row="${i}" data-col="${j}" style="
-                width: ${tamanhoCelula}px;
-                height: ${tamanhoCelula}px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: var(--bg-hover);
-                border-radius: 6px;
-                cursor: pointer;
-                font-weight: bold;
-                font-size: ${tamanhoFonte}rem;
-                flex-shrink: 0;
-            ">${grid[i][j]}</div>`;
-        }
-    }
-    html += `</div>
-        <div style="margin-top: 20px; text-align: center;">
-            <span id="palavra-formando" style="color: var(--accent-color); font-weight: bold; letter-spacing: 2px; word-break: break-all;"></span>
-        </div>
-        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
-            <button class="btn-verificar" onclick="verificarCacaPalavras()">✅ Verificar</button>
-            <button class="btn-voltar" onclick="telaCacaPalavras()">🔄 Nova Palavra</button>
-            <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button>
-            <button class="btn-voltar" onclick="limparSelecaoCaca()">🧹 Limpar</button>
-        </div>
-    </div>`;
-    document.getElementById('games-container').innerHTML = html;
-    
-    let isDragging = false;
-    const cells = document.querySelectorAll('.letra-caca');
-    
-    function atualizarPreview() {
-        let palavra = "";
-        for (let cell of estadoAtual.jogoCacaAtual.selecionadas) {
-            palavra += estadoAtual.jogoCacaAtual.grid[cell.row][cell.col];
-        }
-        const preview = document.getElementById('palavra-formando');
-        if (preview) preview.innerText = palavra || "---";
-    }
-    
-    function limparSelecao() {
-        estadoAtual.jogoCacaAtual.selecionadas = [];
-        cells.forEach(cell => cell.style.background = "var(--bg-hover)");
-        atualizarPreview();
-    }
-    
-    function toggleCelula(cell, isDrag = false) {
-        const row = parseInt(cell.dataset.row), col = parseInt(cell.dataset.col);
-        const selecionadas = estadoAtual.jogoCacaAtual.selecionadas;
-        const index = selecionadas.findIndex(s => s.row === row && s.col === col);
-        
-        if (index === -1) {
-            if (isDrag && selecionadas.length > 0) {
-                const ultima = selecionadas[selecionadas.length - 1];
-                const diffRow = Math.abs(ultima.row - row);
-                const diffCol = Math.abs(ultima.col - col);
-                if (diffRow <= 1 && diffCol <= 1 && !(diffRow === 0 && diffCol === 0)) {
-                    selecionadas.push({ row, col });
-                    cell.style.background = "var(--feedback-ok)";
-                }
-            } else if (!isDrag || selecionadas.length === 0) {
-                if (!isDrag) limparSelecao();
-                selecionadas.push({ row, col });
-                cell.style.background = "var(--feedback-ok)";
-            }
-        }
-        atualizarPreview();
-    }
-    
-    cells.forEach(cell => {
-        cell.addEventListener('click', () => toggleCelula(cell, false));
-        cell.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            limparSelecao();
-            toggleCelula(cell, true);
-            e.preventDefault();
-        });
-        cell.addEventListener('mouseenter', () => {
-            if (isDragging) toggleCelula(cell, true);
-        });
-        
-        // 🔧 Suporte a toque no celular/tablet
-        cell.addEventListener('touchstart', (e) => {
-            isDragging = true;
-            limparSelecao();
-            toggleCelula(cell, true);
-            e.preventDefault();
-        }, { passive: false });
-        
-        cell.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            e.preventDefault();
-            const touch = e.touches[0];
-            const el = document.elementFromPoint(touch.clientX, touch.clientY);
-            if (el && el.classList.contains('letra-caca')) {
-                toggleCelula(el, true);
-            }
-        }, { passive: false });
-        
-        cell.addEventListener('touchend', () => {
-            isDragging = false;
-        });
-    });
-    
-    document.addEventListener('mouseup', () => { isDragging = false; });
-    window.limparSelecaoCaca = limparSelecao;
-}
-
-function verificarCacaPalavras() {
-    const selecionadas = estadoAtual.jogoCacaAtual.selecionadas;
-    if (selecionadas.length === 0) {
-        mostrarMensagem("Selecione as letras arrastando ou clicando nelas.", false);
-        return;
-    }
-    
-    let palavraFormada = "";
-    for (let cell of selecionadas) palavraFormada += estadoAtual.jogoCacaAtual.grid[cell.row][cell.col];
-    const palavraReversa = palavraFormada.split('').reverse().join('');
-    const alvo = estadoAtual.jogoCacaAtual.palavraBuscar;
-    
-    if (palavraFormada === alvo || palavraReversa === alvo) {
-        registrarAcerto("Caça-Palavras", "ACERTO_MEDIO", 0);
-        setTimeout(() => telaCacaPalavras(), 2000);
-    } else {
-        mostrarMensagem(`❌ "${palavraFormada}" não é a palavra correta.`, false);
-        estadoAtual.jogoCacaAtual.selecionadas = [];
-        document.querySelectorAll('.letra-caca').forEach(cell => cell.style.background = "var(--bg-hover)");
-        document.getElementById('palavra-formando').innerText = "---";
-    }
-}
-
-// ================= MONTE A PALAVRA (COM SISTEMA ANTI-REPETIÇÃO) =================
-function telaConfigMonte() {
-    const palavrasDisponiveis = ["CASA", "BOLA", "GATO", "SOL", "LUA", "FLOR", "CARRO", "AVIÃO", "ESCOLA", "PROFESSOR", "LIVRO", "CADERNO", "BICICLETA", "COMPUTADOR", "CHOCOLATE", "ELEFANTE", "GIRAFA", "MACACO", "BORBOLETA", "TELEVISÃO", "MICROONDAS", "HELICOPTERO", "MELANCIA", "ARQUITETO", "DENTISTA", "VETERINARIO", "BOMBEIRO", "ASTRONAUTA", "PIRATA", "PRINCESA"];
-    
-    // Usa sistema anti-repetição para palavras
-    const jogoNome = "Monte a Palavra";
-    if (!estadoAtual.historicoPerguntas[jogoNome]) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-    }
-    
-    const historico = estadoAtual.historicoPerguntas[jogoNome];
-    let palavraEscolhida;
-    
-    if (historico.length >= palavrasDisponiveis.length) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-        palavraEscolhida = palavrasDisponiveis[Math.floor(Math.random() * palavrasDisponiveis.length)];
-        mostrarMensagem("🎉 Parabéns! Você montou todas as palavras! Recomeçando!", true);
-    } else {
-        const palavrasNaoUsadas = palavrasDisponiveis.filter((_, index) => !historico.includes(index));
-        const randomIndex = Math.floor(Math.random() * palavrasNaoUsadas.length);
-        palavraEscolhida = palavrasNaoUsadas[randomIndex];
-        const indexOriginal = palavrasDisponiveis.findIndex(p => p === palavraEscolhida);
-        historico.push(indexOriginal);
-    }
-    
-    document.getElementById('games-container').innerHTML = `<div class="jogo-wrapper">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: var(--accent-color);">📝 Monte a Palavra</h2>
-            <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                📊 ${historico.length}/${palavrasDisponiveis.length} palavras completadas
-            </div>
-        </div>
-        <p>Forme a palavra: <strong style="color: var(--accent-color); font-size: 1.5rem;">${palavraEscolhida}</strong></p>
-        <div class="slots-container" id="slots-monte" style="display: flex; gap: 10px; justify-content: center; min-height: 80px; margin: 20px; flex-wrap: wrap;"></div>
-        <div class="letras-disponiveis" id="letras-monte" style="display: flex; gap: 10px; justify-content: center; margin: 20px; flex-wrap: wrap;"></div>
-        <button id="btn-monte" class="btn-verificar" disabled onclick="validarMonte('${palavraEscolhida}')">✅ Verificar</button>
-        <button class="btn-voltar" onclick="telaConfigMonte()">🔄 Nova Palavra</button>
-        <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button>
-    </div>`;
-    
-    const slots = document.getElementById('slots-monte');
-    for (let i = 0; i < palavraEscolhida.length; i++) {
-        const s = document.createElement('div');
-        s.className = 'slot-vazio';
-        s.style.width = '60px';
-        s.style.height = '60px';
-        s.style.display = 'flex';
-        s.style.alignItems = 'center';
-        s.style.justifyContent = 'center';
-        s.style.background = 'var(--bg-hover)';
-        s.style.borderRadius = '10px';
-        s.style.border = '2px dashed var(--border-color)';
-        s.ondragover = e => e.preventDefault();
-        s.ondrop = e => dropMonte(e, checarPreenchimentoMonte);
-        slots.appendChild(s);
-    }
-    
-    const letrasEmbaralhadas = palavraEscolhida.split('').sort(() => Math.random() - 0.5);
-    letrasEmbaralhadas.forEach((l, i) => {
-        const d = document.createElement('div');
-        d.className = 'letra-item';
-        d.innerText = l;
-        d.draggable = true;
-        d.id = "L"+i;
-        d.style.width = '60px';
-        d.style.height = '60px';
-        d.style.display = 'flex';
-        d.style.alignItems = 'center';
-        d.style.justifyContent = 'center';
-        d.style.background = 'var(--accent-color)';
-        d.style.color = 'white';
-        d.style.borderRadius = '10px';
-        d.style.cursor = 'grab';
-        d.style.fontSize = '1.5rem';
-        d.ondragstart = e => e.dataTransfer.setData("text", e.target.id);
-        document.getElementById('letras-monte').appendChild(d);
-    });
-}
-
-function dropMonte(e, callback) {
-    e.preventDefault();
-    const data = e.dataTransfer.getData("text");
-    const el = document.getElementById(data);
-    if (e.target.classList.contains('slot-vazio') && e.target.childNodes.length === 0) {
-        const clone = el.cloneNode(true);
-        clone.draggable = false;
-        clone.style.cursor = 'default';
-        clone.style.opacity = '0.7';
-        e.target.appendChild(clone);
-        el.style.display = 'none';
-        if (callback) callback();
-    }
-}
-
-function checarPreenchimentoMonte() {
-    const slots = document.querySelectorAll('#slots-monte .slot-vazio');
-    const btn = document.getElementById('btn-monte');
-    if (btn) btn.disabled = !Array.from(slots).every(s => s.hasChildNodes());
-}
-
-function validarMonte(palavraCorreta) {
-    let res = "";
-    document.querySelectorAll('#slots-monte .slot-vazio').forEach(s => res += s.innerText);
-    if (res === palavraCorreta) {
-        registrarAcerto("Monte a Palavra", "ACERTO_MEDIO", 0);
-        salvarProgresso();
-        mostrarMensagem(`🎉 Parabéns! Você formou a palavra ${palavraCorreta}!`, true);
-        setTimeout(telaConfigMonte, 2000);
-    } else {
-        mostrarMensagem(`❌ A palavra correta é ${palavraCorreta}. Tente novamente!`, false);
-    }
-}
-
-// ================= SÍLABAS MÁGICAS (COM SISTEMA ANTI-REPETIÇÃO) =================
-function telaSilabasMagicas() {
-    const palavras = ["CASA", "BOLA", "GATO", "SOL", "LUA", "FLOR", "CARRO", "AVIÃO", "ESCOLA", "PROFESSOR", "CADERNO", "LAPIS", "BORRACHA", "MOCHILA", "COMPUTADOR", "BICICLETA", "CHOCOLATE", "TELEVISÃO", "MELANCIA", "ELEFANTE", "GIRAFA", "MACACO", "BORBOLETA", "HELICOPTERO", "MICROONDAS"];
-    
-    const jogoNome = "Sílabas Mágicas";
-    if (!estadoAtual.historicoPerguntas[jogoNome]) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-    }
-    
-    const historico = estadoAtual.historicoPerguntas[jogoNome];
-    let palavraSecreta;
-    
-    if (historico.length >= palavras.length) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-        palavraSecreta = palavras[Math.floor(Math.random() * palavras.length)];
-        mostrarMensagem("🎉 Parabéns! Você montou todas as palavras! Recomeçando!", true);
-    } else {
-        const palavrasNaoUsadas = palavras.filter((_, index) => !historico.includes(index));
-        palavraSecreta = palavrasNaoUsadas[Math.floor(Math.random() * palavrasNaoUsadas.length)];
-        const indexOriginal = palavras.findIndex(p => p === palavraSecreta);
-        historico.push(indexOriginal);
-    }
-    
-    const silabas = [];
-    for (let i = 0; i < palavraSecreta.length; i += 2) silabas.push(palavraSecreta.substring(i, i + 2));
-    const silabasEmbaralhadas = [...silabas].sort(() => Math.random() - 0.5);
-    
-    let html = `<div class="jogo-wrapper">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: var(--accent-color);">🔤 Sílabas Mágicas</h2>
-            <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                📊 ${historico.length}/${palavras.length} palavras completadas
-            </div>
-        </div>
-        <p>Monte a palavra juntando as sílabas na ordem correta!</p>
-        <p><strong>Palavra: ${'_'.repeat(palavraSecreta.length)} (${palavraSecreta.length} letras)</strong></p>
-        <div style="display: flex; gap: 15px; justify-content: center; margin: 30px 0; flex-wrap: wrap;">`;
-    silabasEmbaralhadas.forEach((silaba, idx) => {
-        html += `<div class="letra-item" draggable="true" id="silaba-${idx}" ondragstart="dragSilaba(event)" data-silaba="${silaba}" style="cursor: grab; padding: 15px; background: var(--accent-color); color: white; border-radius: 10px; font-size: 1.2rem;">${silaba}</div>`;
-    });
-    html += `</div><div class="slots-container" id="slots-silabas" style="display: flex; gap: 15px; justify-content: center; min-height: 80px; flex-wrap: wrap;"></div>
-        <button class="btn-verificar" onclick="verificarSilabas('${palavraSecreta}')">✅ Verificar</button>
-        <button class="btn-voltar" onclick="telaSilabasMagicas()">🔄 Nova Palavra</button>
-        <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button>
-    </div>`;
-    document.getElementById('games-container').innerHTML = html;
-    
-    for (let i = 0; i < silabas.length; i++) {
-        const slot = document.createElement('div');
-        slot.className = 'slot-vazio';
-        slot.style.minWidth = '80px';
-        slot.style.height = '65px';
-        slot.style.background = 'var(--bg-hover)';
-        slot.style.borderRadius = '10px';
-        slot.style.border = '2px dashed var(--border-color)';
-        slot.style.display = 'flex';
-        slot.style.alignItems = 'center';
-        slot.style.justifyContent = 'center';
-        slot.ondragover = e => e.preventDefault();
-        slot.ondrop = e => dropSilaba(e);
-        document.getElementById('slots-silabas').appendChild(slot);
-    }
-}
-
-function dragSilaba(e) {
-    e.dataTransfer.setData("text/plain", e.target.id);
-    e.dataTransfer.setData("silaba", e.target.getAttribute('data-silaba'));
-}
-
-function dropSilaba(e) {
-    e.preventDefault();
-    const id = e.dataTransfer.getData("text/plain");
-    const elemento = document.getElementById(id);
-    if (e.target.classList.contains('slot-vazio') && e.target.children.length === 0) {
-        const clone = elemento.cloneNode(true);
-        clone.draggable = false;
-        clone.style.cursor = "default";
-        clone.style.background = "var(--feedback-ok)";
-        e.target.appendChild(clone);
-        elemento.style.opacity = "0.3";
-        elemento.draggable = false;
-    }
-}
-
-function verificarSilabas(palavraCorreta) {
-    let palavraFormada = "";
-    document.querySelectorAll('#slots-silabas .letra-item').forEach(slot => palavraFormada += slot.innerText);
-    if (palavraFormada === palavraCorreta) {
-        registrarAcerto("Sílabas Mágicas", "ACERTO_MEDIO", 0);
-        salvarProgresso();
-        mostrarMensagem(`🎉 Parabéns! Você formou a palavra ${palavraCorreta}!`, true);
-        setTimeout(telaSilabasMagicas, 2000);
-    } else {
-        mostrarMensagem(`💡 A palavra correta é ${palavraCorreta}. Tente novamente!`, false);
-    }
-}
-
-// ================= DITADO VISUAL (COM SISTEMA ANTI-REPETIÇÃO) =================
-function telaDitadoVisual() {
-    const jogoNome = "Ditado Visual";
-    const lista = bancoDitadoVisual;
-    
-    if (!estadoAtual.historicoPerguntas[jogoNome]) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-    }
-    
-    const historico = estadoAtual.historicoPerguntas[jogoNome];
-    let item;
-    
-    if (historico.length >= lista.length) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-        item = lista[Math.floor(Math.random() * lista.length)];
-        mostrarMensagem("🎉 Parabéns! Você completou todas as imagens! Recomeçando!", true);
-    } else {
-        const itensNaoUsados = lista.filter((_, index) => !historico.includes(index));
-        item = itensNaoUsados[Math.floor(Math.random() * itensNaoUsados.length)];
-        const indexOriginal = lista.findIndex(i => i === item);
-        historico.push(indexOriginal);
-    }
-    
-    const restantes = lista.length - historico.length;
-    
-    document.getElementById('games-container').innerHTML = `
-        <div class="jogo-wrapper">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color: var(--accent-color);">🖼️ Ditado Visual</h2>
-                <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                    📊 ${historico.length}/${lista.length} imagens | Faltam ${restantes}
-                </div>
-            </div>
-            <div style="font-size: 5rem; margin: 30px;">${item.imagem}</div>
-            <p style="font-size: 1.3rem;">O que é esta imagem?</p>
-            <input type="text" id="resposta-ditado" placeholder="Digite sua resposta..." style="padding: 12px; font-size: 1.2rem; border-radius: 10px; border: 2px solid var(--accent-color); background: var(--bg-card); color: var(--text-primary); margin: 20px; width: 250px; text-align: center;">
-            <div><button class="btn-verificar" onclick="verificarDitado('${item.palavra}')">✅ Verificar</button>
-            <button class="btn-voltar" onclick="telaDitadoVisual()">🔄 Próxima</button>
-            <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button></div>
-        </div>`;
-}
-
-function verificarDitado(palavraCorreta) {
-    const resposta = document.getElementById('resposta-ditado').value.toUpperCase().trim();
-    if (resposta === palavraCorreta) {
-        registrarAcerto("Ditado Visual", "ACERTO_SIMPLES", 0);
-        salvarProgresso();
-        mostrarMensagem(`🎉 Parabéns! A imagem é ${palavraCorreta}!`, true);
-        setTimeout(telaDitadoVisual, 2000);
-    } else {
-        mostrarMensagem(`💡 A resposta correta é ${palavraCorreta}. Tente novamente!`, false);
-    }
-}
-
-// ================= RIMA MALUCA (COM SISTEMA ANTI-REPETIÇÃO) =================
-function telaRimaMaluca() {
-    const jogoNome = "Rima Maluca";
-    const lista = bancoRimas;
-    
-    if (!estadoAtual.historicoPerguntas[jogoNome]) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-    }
-    
-    const historico = estadoAtual.historicoPerguntas[jogoNome];
-    let item;
-    
-    if (historico.length >= lista.length) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-        item = lista[Math.floor(Math.random() * lista.length)];
-        mostrarMensagem("🎉 Parabéns! Você completou todas as rimas! Recomeçando!", true);
-    } else {
-        const itensNaoUsados = lista.filter((_, index) => !historico.includes(index));
-        item = itensNaoUsados[Math.floor(Math.random() * itensNaoUsados.length)];
-        const indexOriginal = lista.findIndex(i => i === item);
-        historico.push(indexOriginal);
-    }
-    
-    const opcoes = [item.certa, ...item.erradas].sort(() => Math.random() - 0.5);
-    const restantes = lista.length - historico.length;
-    
-    document.getElementById('games-container').innerHTML = `
-        <div class="jogo-wrapper">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color: var(--accent-color);">🎵 Rima Maluca</h2>
-                <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                    📊 ${historico.length}/${lista.length} rimas | Faltam ${restantes}
-                </div>
-            </div>
-            <p style="font-size: 1.5rem;">Que palavra rima com <strong>${item.alvo}</strong>?</p>
-            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin: 30px 0;">
-                ${opcoes.map(opt => `<button class="btn-opcao" onclick="verificarRima('${opt}', '${item.certa}')" style="padding: 15px 25px; font-size: 1.2rem; cursor: pointer; background: var(--bg-hover); color: var(--accent-color); border: 2px solid var(--accent-color); border-radius: 10px;">${opt}</button>`).join('')}
-            </div>
-            <button class="btn-voltar" onclick="telaRimaMaluca()">🔄 Próxima</button>
-            <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button>
-        </div>`;
-}
-
-function verificarRima(escolha, certa) {
-    if (escolha === certa) {
-        registrarAcerto("Rima Maluca", "ACERTO_SIMPLES", 0);
-        salvarProgresso();
-        mostrarMensagem(`🎉 Perfeito! ${escolha} rima com a palavra!`, true);
-        setTimeout(telaRimaMaluca, 2000);
-    } else {
-        mostrarMensagem(`💡 Tente novamente! A palavra que rima é ${certa}.`, false);
-    }
-}
-
-// ================= QUAL É A LETRA? (COM SISTEMA ANTI-REPETIÇÃO) =================
-function telaQualLetra() {
-    const letras = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
-    
-    const jogoNome = "Qual é a Letra?";
-    if (!estadoAtual.historicoPerguntas[jogoNome]) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-    }
-    
-    const historico = estadoAtual.historicoPerguntas[jogoNome];
-    let letraAtual;
-    
-    if (historico.length >= letras.length) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-        letraAtual = letras[Math.floor(Math.random() * letras.length)];
-        mostrarMensagem("🎉 Parabéns! Você praticou todas as letras! Recomeçando!", true);
-    } else {
-        const letrasNaoUsadas = letras.filter((_, index) => !historico.includes(index));
-        letraAtual = letrasNaoUsadas[Math.floor(Math.random() * letrasNaoUsadas.length)];
-        const indexOriginal = letras.findIndex(l => l === letraAtual);
-        historico.push(indexOriginal);
-    }
-    
-    const opcoes = [letraAtual, letras[Math.floor(Math.random() * letras.length)], letras[Math.floor(Math.random() * letras.length)], letras[Math.floor(Math.random() * letras.length)]].sort(() => Math.random() - 0.5);
-    const restantes = letras.length - historico.length;
-    
-    document.getElementById('games-container').innerHTML = `
-        <div class="jogo-wrapper">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color: var(--accent-color);">❓ Qual é a Letra?</h2>
-                <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                    📊 ${historico.length}/${letras.length} letras | Faltam ${restantes}
-                </div>
-            </div>
-            <div style="background: var(--bg-hover); padding: 40px; border-radius: 20px; margin: 20px;">
-                <span style="font-size: 6rem; font-weight: bold;">${letraAtual}</span>
-            </div>
-            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-                ${opcoes.map(opt => `<button class="btn-opcao" onclick="verificarLetra('${opt}', '${letraAtual}')" style="padding: 20px 30px; font-size: 1.5rem; cursor: pointer; background: var(--bg-hover); color: var(--accent-color); border: 2px solid var(--accent-color); border-radius: 10px;">${opt}</button>`).join('')}
-            </div>
-            <button class="btn-voltar" onclick="telaQualLetra()" style="margin-top: 20px;">🔄 Próxima</button>
-            <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button>
-        </div>`;
-}
-
-function verificarLetra(escolha, certa) {
-    if (escolha === certa) {
-        registrarAcerto("Qual é a Letra?", "ACERTO_SIMPLES", 0);
-        salvarProgresso();
-        mostrarMensagem(`🎉 Muito bem! A letra é ${certa}!`, true);
-        setTimeout(telaQualLetra, 2000);
-    } else {
-        mostrarMensagem(`💡 Tente novamente! A letra correta é ${certa}.`, false);
-    }
-}
-
-// ================= MEMÓRIA DE PALAVRAS (COM SISTEMA ANTI-REPETIÇÃO) =================
-function telaMemoriaPalavras() {
-    const palavras = ["CASA", "BOLA", "GATO", "SOL", "LUA", "FLOR", "CARRO", "AVIÃO", "ESCOLA", "PROFESSOR", "LIVRO", "CADERNO", "BICICLETA", "COMPUTADOR", "CHOCOLATE", "ELEFANTE", "GIRAFA", "MACACO", "BORBOLETA", "TELEVISÃO"];
-    
-    const jogoNome = "Memória de Palavras";
-    if (!estadoAtual.historicoPerguntas[jogoNome]) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-    }
-    
-    const historico = estadoAtual.historicoPerguntas[jogoNome];
-    let palavraSecreta;
-    
-    if (historico.length >= palavras.length) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-        palavraSecreta = palavras[Math.floor(Math.random() * palavras.length)];
-        mostrarMensagem("🎉 Parabéns! Você completou todas as palavras! Recomeçando!", true);
-    } else {
-        const palavrasNaoUsadas = palavras.filter((_, index) => !historico.includes(index));
-        palavraSecreta = palavrasNaoUsadas[Math.floor(Math.random() * palavrasNaoUsadas.length)];
-        const indexOriginal = palavras.findIndex(p => p === palavraSecreta);
-        historico.push(indexOriginal);
-    }
-    
-    const letrasEmbaralhadas = palavraSecreta.split('').sort(() => Math.random() - 0.5);
-    const restantes = palavras.length - historico.length;
-    
-    document.getElementById('games-container').innerHTML = `
-        <div class="jogo-wrapper">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color: var(--accent-color);">🧠 Memória de Palavras</h2>
-                <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                    📊 ${historico.length}/${palavras.length} palavras | Faltam ${restantes}
-                </div>
-            </div>
-            <p>Organize as letras para formar a palavra:</p>
-            <p><strong>Dica: A palavra tem ${palavraSecreta.length} letras</strong></p>
-            <div style="display: flex; gap: 15px; justify-content: center; margin: 20px; flex-wrap: wrap;">
-                ${letrasEmbaralhadas.map((l, i) => `<div class="letra-item" draggable="true" ondragstart="dragLetraMemoria(event)" id="letra-mem-${i}" style="width: 60px; height: 60px; cursor: grab; display: flex; align-items: center; justify-content: center; background: var(--accent-color); color: white; border-radius: 10px; font-size: 1.5rem;">${l}</div>`).join('')}
-            </div>
-            <div class="slots-container" id="slots-memoria" style="display: flex; gap: 15px; justify-content: center; min-height: 80px; flex-wrap: wrap;"></div>
-            <button class="btn-verificar" onclick="verificarMemoriaPalavras('${palavraSecreta}')">✅ Verificar</button>
-            <button class="btn-voltar" onclick="telaMemoriaPalavras()">🔄 Nova Palavra</button>
-            <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button>
-        </div>`;
-    
-    for (let i = 0; i < palavraSecreta.length; i++) {
-        const slot = document.createElement('div');
-        slot.className = 'slot-vazio';
-        slot.style.width = '60px';
-        slot.style.height = '60px';
-        slot.style.background = 'var(--bg-hover)';
-        slot.style.borderRadius = '10px';
-        slot.style.border = '2px dashed var(--border-color)';
-        slot.style.display = 'flex';
-        slot.style.alignItems = 'center';
-        slot.style.justifyContent = 'center';
-        slot.ondragover = e => e.preventDefault();
-        slot.ondrop = e => dropLetraMemoria(e);
-        document.getElementById('slots-memoria').appendChild(slot);
-    }
-}
-
-function dragLetraMemoria(e) { e.dataTransfer.setData("text/plain", e.target.id); }
-function dropLetraMemoria(e) {
-    e.preventDefault();
-    const id = e.dataTransfer.getData("text/plain");
-    const elemento = document.getElementById(id);
-    if (e.target.classList.contains('slot-vazio') && e.target.children.length === 0) {
-        const clone = elemento.cloneNode(true);
-        clone.draggable = false;
-        clone.style.cursor = "default";
-        clone.style.background = "var(--feedback-ok)";
-        e.target.appendChild(clone);
-        elemento.style.opacity = "0.3";
-        elemento.draggable = false;
-    }
-}
-function verificarMemoriaPalavras(palavraCorreta) {
-    let palavraFormada = "";
-    document.querySelectorAll('#slots-memoria .letra-item').forEach(slot => palavraFormada += slot.innerText);
-    if (palavraFormada === palavraCorreta) {
-        registrarAcerto("Memória de Palavras", "ACERTO_MEDIO", 0);
-        salvarProgresso();
-        mostrarMensagem(`🎉 Parabéns! Você formou a palavra ${palavraCorreta}!`, true);
-        setTimeout(telaMemoriaPalavras, 2000);
-    } else {
-        mostrarMensagem(`💡 A palavra correta é ${palavraCorreta}. Tente novamente!`, false);
-    }
-}
-
-// ================= PALAVRA OCULTA (COM SISTEMA ANTI-REPETIÇÃO) =================
-function telaPalavraOculta() {
-    const jogoNome = "Palavra Oculta";
-    const lista = bancoPalavraOculta;
-    
-    if (!estadoAtual.historicoPerguntas[jogoNome]) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-    }
-    
-    const historico = estadoAtual.historicoPerguntas[jogoNome];
-    let item;
-    
-    if (historico.length >= lista.length) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-        item = lista[Math.floor(Math.random() * lista.length)];
-        mostrarMensagem("🎉 Parabéns! Você descobriu todas as palavras ocultas! Recomeçando!", true);
-    } else {
-        const itensNaoUsados = lista.filter((_, index) => !historico.includes(index));
-        item = itensNaoUsados[Math.floor(Math.random() * itensNaoUsados.length)];
-        const indexOriginal = lista.findIndex(i => i === item);
-        historico.push(indexOriginal);
-    }
-    
-    const restantes = lista.length - historico.length;
-    
-    document.getElementById('games-container').innerHTML = `
-        <div class="jogo-wrapper">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color: var(--accent-color);">🔎 Palavra Oculta</h2>
-                <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                    📊 ${historico.length}/${lista.length} palavras | Faltam ${restantes}
-                </div>
-            </div>
-            <div style="background: var(--bg-hover); padding: 30px; border-radius: 20px; margin: 20px;">
-                <p style="font-size: 1.3rem;">💡 Dica: ${item.dica}</p>
-            </div>
-            <p>A palavra tem ${item.palavra.length} letras</p>
-            <div style="display: flex; gap: 10px; justify-content: center; margin: 20px; flex-wrap: wrap;">
-                ${'_'.repeat(item.palavra.length).split('').map(() => `<input type="text" class="letra-oculta" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem; border-radius: 10px; border: 2px solid var(--accent-color); background: var(--bg-card); color: var(--text-primary);">`).join('')}
-            </div>
-            <button class="btn-verificar" onclick="verificarPalavraOculta('${item.palavra}')">✅ Verificar</button>
-            <button class="btn-voltar" onclick="telaPalavraOculta()">🔄 Próxima</button>
-            <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button>
-        </div>`;
-}
-
-function verificarPalavraOculta(palavraCorreta) {
-    let resposta = "";
-    document.querySelectorAll('.letra-oculta').forEach(input => resposta += input.value.toUpperCase());
-    if (resposta === palavraCorreta) {
-        registrarAcerto("Palavra Oculta", "ACERTO_DIFICIL", 0);
-        salvarProgresso();
-        mostrarMensagem(`🎉 Excelente! A palavra é ${palavraCorreta}!`, true);
-        setTimeout(telaPalavraOculta, 2000);
-    } else {
-        mostrarMensagem(`💡 A palavra correta é ${palavraCorreta}. Tente novamente!`, false);
-    }
-}
-
-// ================= SOMBRAS MÁGICAS (COM SISTEMA ANTI-REPETIÇÃO) =================
-function telaSombrasMagicas() {
-    const itens = [
-        { imagem: "🐶", sombra: "🐕", nome: "cachorro" }, { imagem: "🐱", sombra: "🐈", nome: "gato" },
-        { imagem: "🐭", sombra: "🐀", nome: "rato" }, { imagem: "🐮", sombra: "🐄", nome: "vaca" },
-        { imagem: "🐷", sombra: "🐖", nome: "porco" }, { imagem: "🦆", sombra: "🐤", nome: "pato" },
-        { imagem: "🍎", sombra: "🍎", nome: "maçã" }, { imagem: "🚗", sombra: "🚗", nome: "carro" },
-        { imagem: "⭐", sombra: "⭐", nome: "estrela" }, { imagem: "🌙", sombra: "🌙", nome: "lua" },
-        { imagem: "🐘", sombra: "🐘", nome: "elefante" }, { imagem: "🦒", sombra: "🦒", nome: "girafa" },
-        { imagem: "🐒", sombra: "🐒", nome: "macaco" }, { imagem: "🦁", sombra: "🦁", nome: "leão" },
-        { imagem: "🐧", sombra: "🐧", nome: "pinguim" }, { imagem: "🐬", sombra: "🐬", nome: "golfinho" },
-        { imagem: "🦋", sombra: "🦋", nome: "borboleta" }, { imagem: "🐝", sombra: "🐝", nome: "abelha" },
-        { imagem: "🐙", sombra: "🐙", nome: "polvo" }, { imagem: "🐟", sombra: "🐟", nome: "peixe" }
-    ];
-    
-    const jogoNome = "Sombras Mágicas";
-    if (!estadoAtual.historicoPerguntas[jogoNome]) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-    }
-    
-    const historico = estadoAtual.historicoPerguntas[jogoNome];
-    let selecionados;
-    
-    if (historico.length >= Math.floor(itens.length / 4)) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-        const shuffleArray = (arr) => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
-        selecionados = shuffleArray([...itens]).slice(0, 6);
-    } else {
-        const indicesNaoUsados = [];
-        for (let i = 0; i < itens.length; i++) {
-            if (!historico.includes(i)) indicesNaoUsados.push(i);
-        }
-        const indicesEscolhidos = indicesNaoUsados.sort(() => 0.5 - Math.random()).slice(0, 6);
-        selecionados = indicesEscolhidos.map(i => itens[i]);
-        indicesEscolhidos.forEach(i => historico.push(i));
-    }
-    
-    const shuffleArray = (arr) => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
-    const imagensEmbaralhadas = shuffleArray([...selecionados]);
-    const sombrasEmbaralhadas = shuffleArray([...selecionados]);
-    const restantes = Math.floor(itens.length / 4) - historico.length;
-    
-    let html = `<div class="jogo-wrapper">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: var(--accent-color);">🌑 Sombras Mágicas</h2>
-            <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                📊 ${historico.length}/${Math.floor(itens.length / 4)} conjuntos | ${restantes > 0 ? `Faltam ${restantes}` : "Recomeçando!"}
-            </div>
-        </div>
-        <p>Arraste cada imagem para a sombra correta!</p>
-        <div style="display: flex; flex-wrap: wrap; gap: 30px; justify-content: center;">
-            <div><h3>🖼️ IMAGENS</h3><div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">`;
-    imagensEmbaralhadas.forEach((item, idx) => {
-        html += `<div class="letra-item" draggable="true" id="img-${idx}" ondragstart="dragStartHandlerSombras(event)" style="font-size: 3rem; width: 80px; height: 80px; cursor: grab; display: flex; align-items: center; justify-content: center; background: var(--bg-card); border-radius: 15px;">${item.imagem}</div>`;
-    });
-    html += `</div></div><div><h3>🌑 SOMBRAS</h3><div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">`;
-    sombrasEmbaralhadas.forEach((item, idx) => {
-        html += `<div class="slot-sombra" data-resposta="${item.imagem}" ondragover="allowDropSombras(event)" ondrop="dropSombraHandler(event, this)" style="width: 80px; height: 80px; font-size: 2.5rem; display: flex; align-items: center; justify-content: center; background: var(--bg-hover); border: 2px dashed var(--border-color); border-radius: 15px;">${item.sombra}</div>`;
-    });
-    html += `</div></div></div>
-        <div style="margin-top: 20px; text-align: center;">
-            <p>Acertos: <span id="acertos-sombras">0</span> / <span id="total-sombras">${selecionados.length}</span></p>
-        </div>
-        <button class="btn-verificar" onclick="verificarSombras()">✅ Verificar</button>
-        <button class="btn-voltar" onclick="telaSombrasMagicas()">🔄 Novo Jogo</button>
-        <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button>
-    </div>`;
-    document.getElementById('games-container').innerHTML = html;
-    window.acertosSombras = 0;
-    window.totalSombras = selecionados.length;
-    document.getElementById('total-sombras').innerText = selecionados.length;
-}
-
-function dragStartHandlerSombras(e) { e.dataTransfer.setData("text/plain", e.target.id); }
-function allowDropSombras(e) { e.preventDefault(); }
-function dropSombraHandler(e, target) {
-    e.preventDefault();
-    const id = e.dataTransfer.getData("text/plain");
-    const elemento = document.getElementById(id);
-    if (!elemento) return;
-    if (target.children.length > 0) { mostrarMensagem("⚠️ Este espaço já está preenchido!", false); return; }
-    const respostaCorreta = target.getAttribute('data-resposta');
-    const imagemArrastada = elemento.innerText;
-    if (imagemArrastada !== respostaCorreta) { mostrarMensagem(`❌ Esta não é a sombra correta!`, false); return; }
-    const clone = elemento.cloneNode(true);
-    clone.draggable = false;
-    clone.style.cursor = "default";
-    clone.style.background = "var(--feedback-ok)";
-    target.innerHTML = "";
-    target.appendChild(clone);
-    elemento.style.opacity = "0.3";
-    elemento.draggable = false;
-    window.acertosSombras++;
-    document.getElementById('acertos-sombras').innerText = window.acertosSombras;
-    mostrarMensagem(`✅ Correto!`, true);
-}
-function verificarSombras() {
-    if (window.acertosSombras === window.totalSombras) {
-        registrarAcerto("Sombras Mágicas", "ACERTO_MEDIO", 0);
-        salvarProgresso();
-        mostrarMensagem(`🎉 Perfeito! Você encontrou todas as ${window.totalSombras} sombras!`, true);
-        setTimeout(telaSombrasMagicas, 2500);
-    } else {
-        mostrarMensagem(`💡 Você acertou ${window.acertosSombras} de ${window.totalSombras}. Continue!`, false);
-    }
-}
-
-// ================= CLASSIFICAÇÃO DE CORES (COM SISTEMA ANTI-REPETIÇÃO) =================
-function telaClassificacaoCores() {
-    const cores = [
-        { nome: "vermelho", cor: "#ff6b6b", emoji: "🔴", itens: ["🍎", "🍓", "🌹", "❤️"] },
-        { nome: "amarelo", cor: "#ffd93d", emoji: "🟡", itens: ["🍌", "🌻", "⭐", "🐤"] },
-        { nome: "verde", cor: "#6bff6b", emoji: "🟢", itens: ["🍏", "🥑", "🌿", "🐸"] },
-        { nome: "azul", cor: "#6b9fff", emoji: "🔵", itens: ["🫐", "🐟", "💧", "🌊"] },
-        { nome: "roxo", cor: "#9b6bff", emoji: "🟣", itens: ["🍇", "🦄", "🔮", "💜"] },
-        { nome: "laranja", cor: "#ff9b6b", emoji: "🟠", itens: ["🍊", "🥕", "🎃", "🐅"] }
-    ];
-    
-    let todosItens = [];
-    cores.forEach(cor => {
-        cor.itens.forEach(item => {
-            todosItens.push({ item: item, cor: cor.nome });
-        });
-    });
-    
-    const jogoNome = "Classificação de Cores";
-    if (!estadoAtual.historicoPerguntas[jogoNome]) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-    }
-    
-    const historico = estadoAtual.historicoPerguntas[jogoNome];
-    let itensSelecionados;
-    
-    if (historico.length >= Math.floor(todosItens.length / 8)) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-        itensSelecionados = todosItens.sort(() => 0.5 - Math.random()).slice(0, 8);
-    } else {
-        const indicesNaoUsados = [];
-        for (let i = 0; i < todosItens.length; i++) {
-            if (!historico.includes(i)) indicesNaoUsados.push(i);
-        }
-        const indicesEscolhidos = indicesNaoUsados.sort(() => 0.5 - Math.random()).slice(0, 8);
-        itensSelecionados = indicesEscolhidos.map(i => todosItens[i]);
-        indicesEscolhidos.forEach(i => historico.push(i));
-    }
-    
-    const restantes = Math.floor(todosItens.length / 8) - historico.length;
-    
-    let html = `<div class="jogo-wrapper">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: var(--accent-color);">🎨 Classificação de Cores</h2>
-            <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                📊 ${historico.length}/${Math.floor(todosItens.length / 8)} rodadas | ${restantes > 0 ? `Faltam ${restantes}` : "Recomeçando!"}
-            </div>
-        </div>
-        <p>Arraste cada item para o balde da cor certa!</p>
-        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px;">`;
-    cores.slice(0, 4).forEach(cor => {
-        html += `<div style="text-align: center;">
-            <div class="slot-cor" data-cor="${cor.nome}" ondragover="allowDropSombras(event)" ondrop="dropCorHandler(event, this)" style="width: 100px; min-height: 140px; background: ${cor.cor}20; border: 2px solid ${cor.cor}; border-radius: 15px; padding: 10px;">
-                <div style="font-size: 2rem;">${cor.emoji}</div>
-                <div>${cor.nome}</div>
-                <div class="itens-no-balde" style="margin-top: 10px; min-height: 50px;"></div>
-            </div>
-        </div>`;
-    });
-    html += `</div><div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">`;
-    itensSelecionados.forEach((item, idx) => {
-        html += `<div class="letra-item" draggable="true" id="item-cor-${idx}" ondragstart="dragStartHandlerSombras(event)" data-cor="${item.cor}" style="font-size: 2rem; cursor: grab; padding: 12px; background: var(--bg-card); border-radius: 10px;">${item.item}</div>`;
-    });
-    html += `</div>
-        <div style="margin-top: 20px; text-align: center;">
-            <p>Classificados: <span id="itens-classificados">0</span> / <span id="total-itens">${itensSelecionados.length}</span></p>
-        </div>
-        <button class="btn-verificar" onclick="verificarCoresClassificacao()">✅ Verificar</button>
-        <button class="btn-voltar" onclick="telaClassificacaoCores()">🔄 Novo Jogo</button>
-        <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button>
-    </div>`;
-    document.getElementById('games-container').innerHTML = html;
-    window.itensClassificados = 0;
-    window.totalItensClassificar = itensSelecionados.length;
-    document.getElementById('total-itens').innerText = itensSelecionados.length;
-}
-
-function dropCorHandler(e, target) {
-    e.preventDefault();
-    const id = e.dataTransfer.getData("text/plain");
-    const elemento = document.getElementById(id);
-    if (!elemento) return;
-    if (elemento.getAttribute('data-usado') === 'true') { mostrarMensagem("⚠️ Este item já foi classificado!", false); return; }
-    const corEsperada = target.getAttribute('data-cor');
-    const corItem = elemento.getAttribute('data-cor');
-    if (corItem !== corEsperada) { mostrarMensagem(`⚠️ Este item é da cor ${corItem}, não ${corEsperada}!`, false); return; }
-    const containerItens = target.querySelector('.itens-no-balde');
-    const clone = elemento.cloneNode(true);
-    clone.id = "clone-cor-" + Date.now();
-    clone.draggable = false;
-    clone.style.cursor = "default";
-    clone.style.background = "var(--feedback-ok)";
-    clone.setAttribute('data-usado', 'true');
-    containerItens.appendChild(clone);
-    elemento.style.display = "none";
-    elemento.setAttribute('data-usado', 'true');
-    window.itensClassificados++;
-    document.getElementById('itens-classificados').innerText = window.itensClassificados;
-    mostrarMensagem(`✅ Correto! Item foi para o balde ${corEsperada}!`, true);
-}
-
-function verificarCoresClassificacao() {
-    if (window.itensClassificados === window.totalItensClassificar) {
-        registrarAcerto("Classificação de Cores", "ACERTO_MEDIO", 0);
-        salvarProgresso();
-        mostrarMensagem(`🎉 Excelente! Você classificou todas as cores!`, true);
-        setTimeout(telaClassificacaoCores, 2500);
-    } else {
-        mostrarMensagem(`💡 Você classificou ${window.itensClassificados} de ${window.totalItensClassificar}. Continue!`, false);
-    }
-}
-
-// ================= CONTAGEM DE OBJETOS (COM SISTEMA ANTI-REPETIÇÃO) =================
-function telaContagemObjetos() {
-    const perguntas = [
-        { imagens: ["🐶", "🐶", "🐶"], pergunta: "Quantos cachorros?", resposta: 3 },
-        { imagens: ["🍎", "🍎"], pergunta: "Quantas maçãs?", resposta: 2 },
-        { imagens: ["⭐", "⭐", "⭐", "⭐"], pergunta: "Quantas estrelas?", resposta: 4 },
-        { imagens: ["🌸", "🌸", "🌸", "🌸", "🌸"], pergunta: "Quantas flores?", resposta: 5 },
-        { imagens: ["🐱", "🐱", "🐱", "🐱"], pergunta: "Quantos gatos?", resposta: 4 },
-        { imagens: ["🍕", "🍕", "🍕"], pergunta: "Quantas pizzas?", resposta: 3 },
-        { imagens: ["🚗", "🚗", "🚗", "🚗", "🚗"], pergunta: "Quantos carros?", resposta: 5 },
-        { imagens: ["🎈", "🎈"], pergunta: "Quantos balões?", resposta: 2 },
-        { imagens: ["📚", "📚", "📚", "📚", "📚", "📚"], pergunta: "Quantos livros?", resposta: 6 },
-        { imagens: ["🐟", "🐟", "🐟", "🐟"], pergunta: "Quantos peixes?", resposta: 4 },
-        { imagens: ["🍦", "🍦", "🍦"], pergunta: "Quantos sorvetes?", resposta: 3 },
-        { imagens: ["🐘", "🐘"], pergunta: "Quantos elefantes?", resposta: 2 },
-        { imagens: ["🐧", "🐧", "🐧", "🐧", "🐧"], pergunta: "Quantos pinguins?", resposta: 5 },
-        { imagens: ["🦋", "🦋", "🦋"], pergunta: "Quantas borboletas?", resposta: 3 },
-        { imagens: ["🐝", "🐝", "🐝", "🐝"], pergunta: "Quantas abelhas?", resposta: 4 }
-    ];
-    
-    const jogoNome = "Contagem de Objetos";
-    if (!estadoAtual.historicoPerguntas[jogoNome]) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-    }
-    
-    const historico = estadoAtual.historicoPerguntas[jogoNome];
-    let atual;
-    
-    if (historico.length >= perguntas.length) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-        atual = perguntas[Math.floor(Math.random() * perguntas.length)];
-        mostrarMensagem("🎉 Parabéns! Você completou todas as contagens! Recomeçando!", true);
-    } else {
-        const perguntasNaoUsadas = perguntas.filter((_, index) => !historico.includes(index));
-        atual = perguntasNaoUsadas[Math.floor(Math.random() * perguntasNaoUsadas.length)];
-        const indexOriginal = perguntas.findIndex(p => p === atual);
-        historico.push(indexOriginal);
-    }
-    
-    let imagensHTML = atual.imagens.map(img => `<span style="font-size: 3rem; margin: 0 5px;">${img}</span>`).join('');
-    let opcoesHTML = '';
-    for (let i = 1; i <= atual.resposta + 3; i++) { 
-        if (i <= 10) opcoesHTML += `<button class="btn-opcao" onclick="verificarContagem(${i}, ${atual.resposta})" style="padding: 15px 25px; font-size: 1.2rem; cursor: pointer; background: var(--bg-hover); color: var(--accent-color); border: 2px solid var(--accent-color); border-radius: 10px; margin: 5px;">${i}</button>`; 
-    }
-    const restantes = perguntas.length - historico.length;
-    
-    document.getElementById('games-container').innerHTML = `<div class="jogo-wrapper">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: var(--accent-color);">🔟 Contagem de Objetos</h2>
-            <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                📊 ${historico.length}/${perguntas.length} contagens | Faltam ${restantes}
-            </div>
-        </div>
-        <div style="font-size: 3rem; margin: 20px;">${imagensHTML}</div>
-        <p style="font-size: 1.3rem;">${atual.pergunta}</p>
-        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin: 20px;">${opcoesHTML}</div>
-        <button class="btn-voltar" onclick="telaContagemObjetos()">🔄 Próximo</button>
-        <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button>
-    </div>`;
-}
-
-function verificarContagem(escolha, certa) {
-    if (escolha === certa) { 
-        registrarAcerto("Contagem de Objetos", "ACERTO_SIMPLES", 0);
-        salvarProgresso();
-        mostrarMensagem(`🎉 Correto! ${certa} é a resposta certa!`, true);
-        setTimeout(telaContagemObjetos, 2000); 
-    } else { 
-        mostrarMensagem(`💡 Tente novamente! A resposta era ${certa}.`, false); 
-    }
-}
-
-// ================= EMOÇÕES (COM SISTEMA ANTI-REPETIÇÃO) =================
-function telaEmocoes() {
-    const emocoes = [
-        { imagem: "😊", nome: "feliz", situacao: "Ganhei um presente!" },
-        { imagem: "😢", nome: "triste", situacao: "Meu sorvete caiu no chão" },
-        { imagem: "😡", nome: "nervoso", situacao: "Alguém quebrou meu brinquedo" },
-        { imagem: "😴", nome: "cansado", situacao: "Brincamos o dia inteiro" },
-        { imagem: "😨", nome: "medo", situacao: "Escureceu e estou sozinho" },
-        { imagem: "🥰", nome: "apaixonado", situacao: "Ganhei um abraço especial" },
-        { imagem: "🤔", nome: "confuso", situacao: "Não entendi a pergunta" },
-        { imagem: "🥳", nome: "animado", situacao: "Vamos viajar amanhã!" },
-        { imagem: "😎", nome: "descolado", situacao: "Ganhei óculos novos" },
-        { imagem: "🤢", nome: "enjoado", situacao: "Comi comida estragada" }
-    ];
-    
-    const jogoNome = "Emoções";
-    if (!estadoAtual.historicoPerguntas[jogoNome]) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-    }
-    
-    const historico = estadoAtual.historicoPerguntas[jogoNome];
-    let atual;
-    
-    if (historico.length >= emocoes.length) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-        atual = emocoes[Math.floor(Math.random() * emocoes.length)];
-        mostrarMensagem("🎉 Parabéns! Você reconheceu todas as emoções! Recomeçando!", true);
-    } else {
-        const emocoesNaoUsadas = emocoes.filter((_, index) => !historico.includes(index));
-        atual = emocoesNaoUsadas[Math.floor(Math.random() * emocoesNaoUsadas.length)];
-        const indexOriginal = emocoes.findIndex(e => e === atual);
-        historico.push(indexOriginal);
-    }
-    
-    const opcoes = [...emocoes].sort(() => 0.5 - Math.random());
-    let opcoesHTML = '';
-    opcoes.slice(0, 4).forEach(emo => opcoesHTML += `<button class="btn-opcao" onclick="verificarEmocao('${emo.nome}', '${atual.nome}')" style="padding: 15px 25px; font-size: 1.2rem; cursor: pointer; background: var(--bg-hover); color: var(--accent-color); border: 2px solid var(--accent-color); border-radius: 10px; margin: 5px;">${emo.imagem} ${emo.nome}</button>`);
-    const restantes = emocoes.length - historico.length;
-    
-    document.getElementById('games-container').innerHTML = `<div class="jogo-wrapper">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: var(--accent-color);">😊 Emoções</h2>
-            <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                📊 ${historico.length}/${emocoes.length} emoções | Faltam ${restantes}
-            </div>
-        </div>
-        <div style="font-size: 5rem; margin: 20px;">${atual.imagem}</div>
-        <p style="font-size: 1.3rem;">"${atual.situacao}"</p>
-        <p style="margin-top: 20px;">Como essa pessoa está se sentindo?</p>
-        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin: 20px;">${opcoesHTML}</div>
-        <button class="btn-voltar" onclick="telaEmocoes()">🔄 Próxima</button>
-        <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button>
-    </div>`;
-}
-
-function verificarEmocao(escolha, certa) {
-    if (escolha === certa) { 
-        registrarAcerto("Emoções", "ACERTO_SIMPLES", 0);
-        salvarProgresso();
-        mostrarMensagem(`🎉 Muito bem! A pessoa está ${certa}!`, true);
-        setTimeout(telaEmocoes, 2000); 
-    } else { 
-        mostrarMensagem(`💡 A pessoa está ${certa}. Tente novamente!`, false); 
-    }
-}
-
-// ================= MINHA ROTINA (COM SISTEMA ANTI-REPETIÇÃO) =================
-function telaMinhaRotina() {
-    const rotinas = [
-        { passo: "🌅 Acordar", ordem: 1 }, { passo: "🪥 Escovar os dentes", ordem: 2 },
-        { passo: "🍞 Tomar café", ordem: 3 }, { passo: "👕 Trocar de roupa", ordem: 4 }, 
-        { passo: "🏫 Ir para escola", ordem: 5 }, { passo: "📚 Estudar", ordem: 6 },
-        { passo: "🍽️ Almoçar", ordem: 7 }, { passo: "😴 Cochilar", ordem: 8 },
-        { passo: "🎮 Brincar", ordem: 9 }, { passo: "🛁 Tomar banho", ordem: 10 },
-        { passo: "🍜 Jantar", ordem: 11 }, { passo: "📖 Ler um livro", ordem: 12 }, { passo: "😴 Dormir", ordem: 13 }
-    ];
-    
-    const jogoNome = "Minha Rotina";
-    if (!estadoAtual.historicoPerguntas[jogoNome]) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-    }
-    
-    const historico = estadoAtual.historicoPerguntas[jogoNome];
-    let rotinasSelecionadas;
-    
-    if (historico.length >= 5) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-        rotinasSelecionadas = rotinas.slice(0, 6);
-    } else {
-        const startIndex = historico.length * 6;
-        rotinasSelecionadas = rotinas.slice(startIndex, startIndex + 6);
-    }
-    
-    const embaralhadas = [...rotinasSelecionadas].sort(() => 0.5 - Math.random());
-    const restantes = Math.floor(rotinas.length / 6) - historico.length;
-    
-    let html = `<div class="jogo-wrapper">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: var(--accent-color);">⏰ Minha Rotina</h2>
-            <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                📊 ${historico.length}/${Math.floor(rotinas.length / 6)} partes | ${restantes > 0 ? `Faltam ${restantes}` : "Recomeçando!"}
-            </div>
-        </div>
-        <p>Organize as atividades na ordem correta (1º ao ${rotinasSelecionadas.length}º)</p>
-        <div style="display: flex; gap: 30px; flex-wrap: wrap; justify-content: center;">
-            <div><h3>📋 ORDEM CORRETA</h3><div id="rotina-slots">`;
-    for (let i = 0; i < rotinasSelecionadas.length; i++) {
-        html += `<div class="slot-rotina" data-ordem="${i+1}" ondragover="allowDropSombras(event)" ondrop="dropRotinaHandler(event, this)" style="width: 220px; padding: 10px; margin: 5px; background: var(--bg-hover); border-radius: 10px; border: 2px dashed var(--border-color);">
-            <span style="background: var(--accent-color); padding: 5px 12px; border-radius: 20px; color: white;">${i+1}º</span>
-            <span class="slot-texto" style="margin-left: 10px;">⬅️ Arraste aqui</span>
-        </div>`;
-    }
-    html += `</div></div><div><h3>🎯 ATIVIDADES</h3><div>`;
-    embaralhadas.forEach((item, idx) => {
-        html += `<div class="letra-item" draggable="true" id="rotina-${idx}" ondragstart="dragStartHandlerSombras(event)" data-passo="${item.passo}" data-ordem="${item.ordem}" style="margin-bottom: 8px; padding: 10px; width: 200px; background: var(--accent-color); color: white; border-radius: 10px; cursor: grab; text-align: center;">${item.passo}</div>`;
-    });
-    html += `</div></div></div>
-        <div style="margin-top: 20px; text-align: center;">
-            <p>Acertos: <span id="acertos-rotina">0</span> / <span id="total-rotina">${rotinasSelecionadas.length}</span></p>
-        </div>
-        <button class="btn-verificar" onclick="verificarRotina(${rotinasSelecionadas.length})">✅ Verificar</button>
-        <button class="btn-voltar" onclick="telaMinhaRotina()">🔄 Nova Rotina</button>
-        <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button>
-    </div>`;
-    document.getElementById('games-container').innerHTML = html;
-    window.acertosRotina = 0;
-    window.totalRotina = rotinasSelecionadas.length;
-    document.getElementById('total-rotina').innerText = rotinasSelecionadas.length;
-}
-
-function dropRotinaHandler(e, target) {
-    e.preventDefault();
-    const id = e.dataTransfer.getData("text/plain");
-    const elemento = document.getElementById(id);
-    if (!elemento) return;
-    const slotTexto = target.querySelector('.slot-texto');
-    if (slotTexto.innerText !== "⬅️ Arraste aqui") { mostrarMensagem("⚠️ Este espaço já está preenchido!", false); return; }
-    const ordemEsperada = parseInt(target.getAttribute('data-ordem'));
-    const ordemItem = parseInt(elemento.getAttribute('data-ordem'));
-    if (ordemItem !== ordemEsperada) {
-        mostrarMensagem(`⚠️ Esta atividade é a ${ordemItem}ª, mas você está colocando na ${ordemEsperada}ª posição!`, false);
-        return;
-    }
-    const clone = elemento.cloneNode(true);
-    clone.draggable = false;
-    clone.style.cursor = "default";
-    clone.style.background = "var(--feedback-ok)";
-    slotTexto.innerHTML = "";
-    slotTexto.appendChild(clone);
-    elemento.style.opacity = "0.3";
-    elemento.draggable = false;
-    target.setAttribute('data-completado', 'true');
-    window.acertosRotina++;
-    document.getElementById('acertos-rotina').innerText = window.acertosRotina;
-    mostrarMensagem(`✅ "${elemento.getAttribute('data-passo')}" na posição correta!`, true);
-}
-
-function verificarRotina(total) {
-    if (window.acertosRotina === total) {
-        registrarAcerto("Minha Rotina", "ACERTO_MEDIO", 0);
-        salvarProgresso();
-        mostrarMensagem(`🎉 Excelente! Rotina organizada corretamente!`, true);
-        setTimeout(telaMinhaRotina, 2500);
-    } else {
-        mostrarMensagem(`💡 Você acertou ${window.acertosRotina} de ${total}. Continue organizando!`, false);
-    }
-}
-
-// ================= CUIDADO COM O AMBIENTE (COM SISTEMA ANTI-REPETIÇÃO) =================
-function telaCuidadoAmbiente() {
-    const acoes = [
-        { acao: "Jogar lixo no chão", correta: false, explicacao: "Devemos jogar o lixo na lixeira!" },
-        { acao: "Separar o lixo para reciclar", correta: true, explicacao: "Reciclar ajuda o planeta!" },
-        { acao: "Apagar a luz ao sair", correta: true, explicacao: "Economizar energia é importante!" },
-        { acao: "Deixar a torneira aberta", correta: false, explicacao: "Feche a torneira para economizar água!" },
-        { acao: "Plantar árvores", correta: true, explicacao: "Árvores produzem oxigênio!" },
-        { acao: "Usar sacolas plásticas", correta: false, explicacao: "Prefira sacolas reutilizáveis!" },
-        { acao: "Andar de bicicleta", correta: true, explicacao: "Não polui e faz bem!" },
-        { acao: "Desperdiçar comida", correta: false, explicacao: "Aproveite os alimentos!" },
-        { acao: "Recolher lixo da praia", correta: true, explicacao: "Mantenha a natureza limpa!" },
-        { acao: "Usar carro para tudo", correta: false, explicacao: "Use transporte público!" },
-        { acao: "Desligar aparelhos da tomada", correta: true, explicacao: "Economiza energia!" },
-        { acao: "Queimar lixo", correta: false, explicacao: "Polui o ar!" },
-        { acao: "Reutilizar garrafas", correta: true, explicacao: "Reduz o lixo!" },
-        { acao: "Comprar produtos com muita embalagem", correta: false, explicacao: "Gera mais lixo!" },
-        { acao: "Usar energia solar", correta: true, explicacao: "Energia limpa e renovável!" }
-    ];
-    
-    const jogoNome = "Cuidado com o Ambiente";
-    if (!estadoAtual.historicoPerguntas[jogoNome]) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-    }
-    
-    const historico = estadoAtual.historicoPerguntas[jogoNome];
-    let atual;
-    
-    if (historico.length >= acoes.length) {
-        estadoAtual.historicoPerguntas[jogoNome] = [];
-        atual = acoes[Math.floor(Math.random() * acoes.length)];
-        mostrarMensagem("🎉 Parabéns! Você aprendeu todas as ações! Recomeçando!", true);
-    } else {
-        const acoesNaoUsadas = acoes.filter((_, index) => !historico.includes(index));
-        atual = acoesNaoUsadas[Math.floor(Math.random() * acoesNaoUsadas.length)];
-        const indexOriginal = acoes.findIndex(a => a === atual);
-        historico.push(indexOriginal);
-    }
-    
-    const restantes = acoes.length - historico.length;
-    
-    document.getElementById('games-container').innerHTML = `<div class="jogo-wrapper">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: var(--accent-color);">🌍 Cuidado com o Ambiente</h2>
-            <div style="background: var(--bg-hover); padding: 8px 16px; border-radius: 15px; font-size: 0.9rem;">
-                📊 ${historico.length}/${acoes.length} ações | Faltam ${restantes}
-            </div>
-        </div>
-        <div style="background: var(--bg-hover); padding: 30px; border-radius: 20px; margin: 20px;">
-            <p style="font-size: 1.5rem;">${atual.acao}</p>
-        </div>
-        <p style="font-size: 1.2rem;">Essa atitude é boa para o planeta?</p>
-        <div style="display: flex; gap: 20px; justify-content: center; margin: 20px;">
-            <button class="btn-opcao" onclick="verificarAmbiente(true, ${atual.correta}, '${atual.explicacao}')" style="background: var(--feedback-ok); padding: 15px 30px; font-size: 1.2rem; cursor: pointer; border: none; border-radius: 10px; color: white;">👍 SIM</button>
-            <button class="btn-opcao" onclick="verificarAmbiente(false, ${atual.correta}, '${atual.explicacao}')" style="background: #ff6b6b; padding: 15px 30px; font-size: 1.2rem; cursor: pointer; border: none; border-radius: 10px; color: white;">👎 NÃO</button>
-        </div>
-        <button class="btn-voltar" onclick="telaCuidadoAmbiente()">🔄 Próxima</button>
-        <button class="btn-voltar" onclick="navigateHome()">🏠 Voltar</button>
-    </div>`;
-}
-
-function verificarAmbiente(resposta, correta, explicacao) {
-    if (resposta === correta) { 
-        registrarAcerto("Cuidado com o Ambiente", "ACERTO_SIMPLES", 0);
-        salvarProgresso();
-        mostrarMensagem(`🎉 Correto! ${explicacao}`, true);
-        setTimeout(telaCuidadoAmbiente, 2000); 
-    } else { 
-        mostrarMensagem(`💡 ${explicacao}`, false); 
-    }
-}
+// (Os jogos de Palavras, Matemática e Ciências agora ficam em jogos-base.js, jogos-dados.js e jogos.js)
 
 // ================= PERSONALIZAÇÃO =================
 let userPreferences = { theme: 'light', fontSize: 'media', spacing: 'normal' };
