@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal EducaTEA | Inclusão Digital</title>
-    <link rel="stylesheet" href="style.css?v=20261110">
-    <link rel="stylesheet" href="jogos.css?v=20261110">
+    <link rel="stylesheet" href="CSS/style.css">
+    <link rel="stylesheet" href="CSS/jogos.css?v=20261114">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Comic+Neue:wght@400;700&amp;display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
@@ -384,39 +384,8 @@
             <div id="games-container"></div>
         </section>
        
-        <section id="tcc-section" class="page">
-            <div class="hero-card tcc-hero">
-                <h1>📄 Nosso TCC</h1>
-                <p>Este site nasceu do nosso Trabalho de Conclusão de Curso. Aqui você pode ler o trabalho completo, baixar o arquivo ou abrir em outra aba.</p>
-            </div>
-
-
-            <div class="card-base tcc-ficha">
-                <h3>EducaTEA: Plataforma Interativa para uma Educação mais Inclusiva</h3>
-                <ul class="tcc-dados">
-                    <li><strong>👩‍🎓 Autores:</strong> Ana Carolina Gattes Roriz e Bruno Silva de Oliveira</li>
-                    <li><strong>👩‍🏫 Orientadora:</strong> Prof.ª Me. Mônica Mendes Da Cunha Pestana</li>
-                    <li><strong>🏫 Instituição:</strong> IFMS – Campus Ponta Porã · Curso Técnico Integrado em Informática</li>
-                    <li><strong>📅 Ano:</strong> 2025</li>
-                </ul>
-                <div class="tcc-botoes">
-                    <a class="btn-tcc btn-tcc-principal" href="tcc/TCC_EducaTEA.pdf" target="_blank" rel="noopener">📖 Abrir em nova aba</a>
-                    <a class="btn-tcc" href="tcc/TCC_EducaTEA.pdf" download="TCC_EducaTEA.pdf">📥 Baixar PDF</a>
-                </div>
-            </div>
-
-
-            <div class="tcc-vazio card-base" id="tcc-vazio" style="display:none">
-                <h3>📄 O TCC será publicado aqui em breve</h3>
-                <p>Estamos finalizando o envio do arquivo. Volte em breve para ler o trabalho completo.</p>
-            </div>
-
-
-            <div class="tcc-leitor card-base" id="tcc-leitor">
-                <iframe data-src="tcc/TCC_EducaTEA.pdf#view=FitH" title="TCC EducaTEA em PDF"></iframe>
-                <p class="tcc-aviso">Se o PDF não aparecer aqui (alguns celulares não mostram PDF dentro da página), use o botão <strong>Abrir em nova aba</strong> ou <strong>Baixar PDF</strong>.</p>
-            </div>
-        </section>
+        <!-- conteúdo montado por tcc.js -->
+        <section id="tcc-section" class="page"></section>
 
 
         <section class="apoiadores-section">
@@ -475,10 +444,11 @@
 <button id="btn-abrir-conquistas" class="btn-abrir-conquistas" onclick="toggleConquistasPanel()">🏆</button>
 
 
-<script src="script.js?v=20261110"></script>
-<script src="jogos-base.js?v=20261110"></script>
-<script src="jogos-dados.js?v=20261110"></script>
-<script src="jogos.js?v=20261110"></script>
+<script src="JS/script.js?v=20261114"></script>
+<script src="JS/tcc.js?v=20261114"></script>
+<script src="JS/jogos-base.js?v=20261114"></script>
+<script src="JS/jogos-dados.js?v=20261114"></script>
+<script src="JS/jogos.js?v=20261114"></script>
 </body>
 </html>
 
