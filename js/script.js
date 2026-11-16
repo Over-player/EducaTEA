@@ -1514,7 +1514,15 @@ const playlistLocal = [
     { icon: "🎼", titulo: "Piano Sereno", subtitulo: "Ambiente Gerado", tipo: "gerada", gerador: "piano" },
     { icon: "✨", titulo: "Espaço Calmo", subtitulo: "Ambiente Gerado", tipo: "gerada", gerador: "espaco" },
     { icon: "🌧️", titulo: "Chuva Suave", subtitulo: "Ambiente Gerado", tipo: "gerada", gerador: "chuva" },
-    { icon: "🌊", titulo: "Ondas do Mar", subtitulo: "Ambiente Gerado", tipo: "gerada", gerador: "mar" }
+    { icon: "🌊", titulo: "Ondas do Mar", subtitulo: "Ambiente Gerado", tipo: "gerada", gerador: "mar" },
+    { icon: "🎁", titulo: "Caixinha de Música", subtitulo: "Ninar", tipo: "gerada", gerador: "caixinha" },
+    { icon: "🪕", titulo: "Harpa Suave", subtitulo: "Relaxar", tipo: "gerada", gerador: "harpa" },
+    { icon: "🔔", titulo: "Sinos Tibetanos", subtitulo: "Respirar", tipo: "gerada", gerador: "sinos" },
+    { icon: "☁️", titulo: "Nuvens", subtitulo: "Calmaria", tipo: "gerada", gerador: "nuvens" },
+    { icon: "🌲", titulo: "Floresta", subtitulo: "Natureza", tipo: "gerada", gerador: "floresta" },
+    { icon: "🦗", titulo: "Noite de Grilos", subtitulo: "Natureza", tipo: "gerada", gerador: "grilos" },
+    { icon: "🔥", titulo: "Lareira", subtitulo: "Aconchego", tipo: "gerada", gerador: "lareira" },
+    { icon: "💧", titulo: "Cachoeira", subtitulo: "Natureza", tipo: "gerada", gerador: "cachoeira" }
 ];
 
 // ---- Motor de música ambiente gerada (Web Audio API) ----
@@ -1539,8 +1547,108 @@ const PROGRESSOES_GERADAS = {
             [164.81, 246.94, 329.63], [130.81, 196.00, 246.94]
         ],
         duracao: 7, onda: 'sine', volumeBase: 0.07
+    },
+    nuvens: {
+        acordes: [
+            [174.61, 220.00, 261.63], [196.00, 246.94, 293.66],
+            [164.81, 196.00, 246.94], [174.61, 220.00, 261.63]
+        ],
+        duracao: 9, onda: 'sine', volumeBase: 0.06
     }
 };
+
+// Trilhas de notas soltas (melodias lentas e suaves em escala pentatônica)
+const NOTAS_GERADAS = {
+    caixinha: { notas: [523.25, 659.25, 783.99, 880.00, 783.99, 659.25, 587.33, 523.25, 659.25, 587.33, 523.25, 392.00],
+                passo: 0.75, queda: 2.2, onda: 'sine', harmonico: 2, volume: 0.13 },
+    harpa:    { notas: [261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 293.66, 349.23, 440.00, 587.33, 440.00, 349.23],
+                passo: 0.9, queda: 3.0, onda: 'triangle', harmonico: 0, volume: 0.15 },
+    sinos:    { notas: [261.63, 392.00, 329.63, 523.25, 293.66, 440.00],
+                passo: 3.2, queda: 7, onda: 'sine', harmonico: 2.76, volume: 0.14 }
+};
+
+function iniciarNotasGeradas(nome) {
+    const cfg = NOTAS_GERADAS[nome];
+    if (!cfg || !audioContext) return;
+    const ctx = audioContext;
+    const mestre = ctx.createGain();
+    mestre.gain.value = localVolumeFactor * 2;
+    mestre.connect(ctx.destination);
+    generatedNodes.push(mestre);
+    let i = 0;
+    function nota() {
+        if (!isGeneratedPlaying) return;
+        const freq = cfg.notas[i % cfg.notas.length];
+        const t = ctx.currentTime;
+        [[freq, 1], [freq * (cfg.harmonico || 0), 0.25]].forEach(([f, v]) => {
+            if (!f) return;
+            const osc = ctx.createOscillator(), g = ctx.createGain();
+            osc.type = cfg.onda; osc.frequency.value = f;
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.linearRampToValueAtTime(cfg.volume * v, t + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + cfg.queda);
+            osc.connect(g).connect(mestre);
+            osc.start(t); osc.stop(t + cfg.queda + 0.1);
+        });
+        i++;
+        generatedTimer = setTimeout(nota, cfg.passo * 1000);
+    }
+    nota();
+}
+
+// Pequenos sons de natureza sobre uma base de ruído (pássaros, grilos, estalos)
+function iniciarSonsNatureza(tipo) {
+    if (!audioContext) return;
+    const ctx = audioContext;
+    const mestre = ctx.createGain();
+    mestre.gain.value = localVolumeFactor * 2;
+    mestre.connect(ctx.destination);
+    generatedNodes.push(mestre);
+
+    function ruidoCurto(dur) {
+        const n = Math.floor(ctx.sampleRate * dur);
+        const b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0);
+        for (let k = 0; k < n; k++) d[k] = Math.random() * 2 - 1;
+        const s = ctx.createBufferSource(); s.buffer = b; return s;
+    }
+    function pio() {
+        const t = ctx.currentTime, osc = ctx.createOscillator(), g = ctx.createGain();
+        const f0 = 2200 + Math.random() * 1400;
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f0, t);
+        osc.frequency.exponentialRampToValueAtTime(f0 * 1.4, t + 0.12);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(0.05, t + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+        osc.connect(g).connect(mestre); osc.start(t); osc.stop(t + 0.2);
+    }
+    function grilo(freq) {
+        for (let k = 0; k < 3; k++) {
+            const t = ctx.currentTime + k * 0.09, osc = ctx.createOscillator(), g = ctx.createGain();
+            osc.type = 'sine'; osc.frequency.value = freq;
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.linearRampToValueAtTime(0.035, t + 0.02);
+            g.gain.linearRampToValueAtTime(0.0001, t + 0.07);
+            osc.connect(g).connect(mestre); osc.start(t); osc.stop(t + 0.08);
+        }
+    }
+    function estalo() {
+        const s = ruidoCurto(0.06), f = ctx.createBiquadFilter(), g = ctx.createGain(), t = ctx.currentTime;
+        f.type = 'bandpass'; f.frequency.value = 1500 + Math.random() * 3000;
+        g.gain.setValueAtTime(0.12 + Math.random() * 0.12, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
+        s.connect(f).connect(g).connect(mestre); s.start(t);
+    }
+    function agenda() {
+        if (!isGeneratedPlaying) return;
+        let prox;
+        if (tipo === 'floresta') { pio(); if (Math.random() < 0.4) setTimeout(pio, 180); prox = 2500 + Math.random() * 4500; }
+        else if (tipo === 'grilos') { grilo([4300, 4700, 5100][Math.floor(Math.random() * 3)]); prox = 450 + Math.random() * 900; }
+        else { estalo(); prox = 80 + Math.random() * 600; }
+        generatedTimer = setTimeout(agenda, prox);
+    }
+    agenda();
+}
 
 function pararGerador() {
     isGeneratedPlaying = false;
@@ -1623,6 +1731,11 @@ function iniciarGerador(tipo) {
     isGeneratedPlaying = true;
     if (tipo === 'chuva') iniciarRuidoGerado(1100, false);
     else if (tipo === 'mar') iniciarRuidoGerado(500, true);
+    else if (tipo === 'cachoeira') iniciarRuidoGerado(2600, false);
+    else if (tipo === 'floresta') { iniciarRuidoGerado(450, false); iniciarSonsNatureza(tipo); }
+    else if (tipo === 'lareira') { iniciarRuidoGerado(220, false); iniciarSonsNatureza(tipo); }
+    else if (tipo === 'grilos') { iniciarRuidoGerado(300, false); iniciarSonsNatureza(tipo); }
+    else if (NOTAS_GERADAS[tipo]) iniciarNotasGeradas(tipo);
     else iniciarProgressaoGerada(tipo);
 }
 
