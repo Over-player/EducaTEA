@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal EducaTEA | Inclusão Digital</title>
-    <link rel="stylesheet" href="css/style.css?v=20261116">
-    <link rel="stylesheet" href="css/jogos.css?v=20261116">
+    <link rel="stylesheet" href="css/style.css?v=20261125">
+    <link rel="stylesheet" href="css/jogos.css?v=20261125">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Comic+Neue:wght@400;700&amp;display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
@@ -184,6 +184,10 @@
     <button id="btn-conquistas" class="btn-acessibilidade" onclick="toggleConquistasPanel()">
         🏆 Conquistas
     </button>
+    <!-- aparece só quando o login (Firebase) está configurado: veja js/firebase-config.js -->
+    <button id="btn-conta" class="btn-acessibilidade" type="button" hidden>
+        👤 Entrar
+    </button>
 </div>
 
 
@@ -257,6 +261,17 @@
             </li>
             <li class="nav-item" id="nav-tcc" onclick="abrirTCC()">
                 <i class="icon">📄</i> Nosso TCC
+            </li>
+
+            <li class="nav-label">Ajuda</li>
+            <li class="nav-item" id="nav-ajuda" onclick="abrirTutorial()">
+                <i class="icon">❓</i> Como usar
+            </li>
+            <li class="nav-item" id="nav-avaliacao" onclick="abrirAvaliacao()">
+                <i class="icon">📝</i> Avaliar o site
+            </li>
+            <li class="nav-item" id="nav-professor" onclick="abrirPainelProfessor()" hidden>
+                <i class="icon">👩‍🏫</i> Painel do Professor
             </li>
         </ul>
     </aside>
@@ -386,6 +401,8 @@
        
         <!-- conteúdo montado por tcc.js -->
         <section id="tcc-section" class="page"></section>
+        <section id="avaliacao-section" class="page"></section>
+        <section id="professor-section" class="page"></section>
 
 
         <section class="apoiadores-section">
@@ -401,7 +418,7 @@
 
 
 <!-- PLAYER DE MÚSICA -->
-<div id="music-player" class="music-player">
+<div id="music-player" class="music-player collapsed">
     <div class="music-player-header" onclick="toggleMusicPlayer()">
         <span class="music-icon">🎵</span>
         <span class="music-title">Músicas Sensoriais</span>
@@ -444,11 +461,14 @@
 <button id="btn-abrir-conquistas" class="btn-abrir-conquistas" onclick="toggleConquistasPanel()">🏆</button>
 
 
-<script src="js/script.js?v=20261116"></script>
-<script src="js/tcc.js?v=20261116"></script>
-<script src="js/jogos/jogos-base.js?v=20261116"></script>
-<script src="js/jogos/jogos-dados.js?v=20261116"></script>
-<script src="js/jogos/jogos.js?v=20261116"></script>
+<script src="js/script.js?v=20261125"></script>
+<script src="js/tcc.js?v=20261125"></script>
+<script src="js/recursos.js?v=20261125"></script>
+<script src="js/firebase-config.js?v=20261125"></script>
+<script src="js/auth.js?v=20261125"></script>
+<script src="js/jogos/jogos-base.js?v=20261125"></script>
+<script src="js/jogos/jogos-dados.js?v=20261125"></script>
+<script src="js/jogos/jogos.js?v=20261125"></script>
 </body>
 </html>
 

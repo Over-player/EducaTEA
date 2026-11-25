@@ -405,6 +405,7 @@ function salvarProgresso() {
         data: new Date().toISOString()
     };
     localStorage.setItem('progresso_educa_tea', JSON.stringify(progresso));
+    if (window.EducaAuth) EducaAuth.aoSalvar(progresso);   // login (auth.js): envia o progresso do aluno para a nuvem
 }
 
 function carregarProgresso() {
@@ -440,8 +441,8 @@ function carregarProgresso() {
     return false;
 }
 
-function resetarProgresso() {
-    if (confirm("⚠️ Tem certeza que deseja resetar todo seu progresso?")) {
+// Zera o progresso na tela e no navegador (sem perguntar). Usada ao sair da conta (auth.js).
+function zerarProgressoLocal() {
         estadoAtual.nivelAtual = 1;
         estadoAtual.pontuacaoTotal = 0;
         estadoAtual.historicoPerguntas = {};
@@ -454,6 +455,13 @@ function resetarProgresso() {
         localStorage.removeItem('progresso_educa_tea');
         atualizarProgresso();
         atualizarStreakVisual();
+        if (typeof renderConquistas === 'function') renderConquistas();
+}
+
+function resetarProgresso() {
+    if (confirm("⚠️ Tem certeza que deseja resetar todo seu progresso?")) {
+        zerarProgressoLocal();
+        salvarProgresso();   // com login, a nuvem também volta ao zero
         if (typeof mostrarMensagem === 'function') {
             mostrarMensagem("🔄 Progresso resetado! Você voltou ao Nível 1.", true);
         }
@@ -1002,7 +1010,7 @@ function carregarJogos(nomeJogo) {
     }
 
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('#nav-resultados, #nav-tcc').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('#nav-resultados, #nav-tcc, #nav-avaliacao, #nav-professor').forEach(n => n.classList.remove('active'));
     document.getElementById('games-section').classList.add('active');
     document.getElementById('category-name').innerText = "Jogo: " + nomeJogo;
     if (window.innerWidth <= 900) closeSidebar();
@@ -1502,6 +1510,7 @@ function resetPreferences() {
     applyTheme('light');
     applyFontSize('media');
     applySpacing('normal');
+    if (window.resetRecursos) resetRecursos();   // fonte para dislexia, reduzir movimento, Libras (recursos.js)
     mostrarMensagem("✅ Configurações restauradas!", true);
 }
 

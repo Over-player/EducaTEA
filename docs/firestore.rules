@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // professor = e-mail cadastrado na coleção "professores" (só você cria, pelo console do Firebase)
+    function ehProfessor() {
+      return request.auth != null &&
+             exists(/databases/$(database)/documents/professores/$(request.auth.token.email));
+    }
+
+    match /professores/{email} {
+      allow read: if request.auth != null && (request.auth.token.email == email || ehProfessor());
+      allow write: if false;
+    }
+
+    // cada aluno lê e grava só o próprio progresso; o professor lê todos
+    match /alunos/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || ehProfessor());
+      allow create, update: if request.auth != null && request.auth.uid == uid;
+      allow delete: if ehProfessor();
+    }
+
+    // lista da turma: só o professor mexe; o aluno só enxerga a própria linha
+    match /turma/{email} {
+      allow read: if request.auth != null && (request.auth.token.email == email || ehProfessor());
+      allow write: if ehProfessor();
+    }
+  }
+}

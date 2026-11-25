@@ -3226,3 +3226,146 @@ body.tcc-lendo { overflow: hidden; }
 .conquista-item.quase { border: 2px dashed var(--accent-color); }
 .conquista-item.quase .conquista-emoji { filter: none; opacity: 1; }
 .conquista-popup { max-width: min(320px, calc(100vw - 30px)); }
+
+
+/* ================= LOGIN, PAINEL DO PROFESSOR E RECURSOS DE ACESSIBILIDADE ================= */
+[hidden] { display: none !important; }
+
+/* ---- janelas (login e tutorial) ---- */
+.auth-modal {
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(0, 0, 0, .6);
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.auth-caixa {
+    position: relative; width: min(420px, 100%); max-height: 92vh; overflow-y: auto;
+    background: var(--bg-card); color: var(--text-primary);
+    border: 1px solid var(--border-color); border-radius: 20px;
+    box-shadow: var(--shadow-lg); padding: 28px 24px 24px;
+}
+.auth-caixa h2 { margin: 0 32px 16px 0; font-size: 1.35rem; }
+.auth-fechar {
+    position: absolute; top: 12px; right: 12px; width: 38px; height: 38px;
+    border: 1px solid var(--border-color); border-radius: 50%; cursor: pointer;
+    background: var(--bg-secondary); color: var(--text-primary); font-size: 1rem;
+}
+.auth-abas { display: flex; gap: 6px; margin-bottom: 16px; background: var(--bg-secondary); padding: 4px; border-radius: 12px; }
+.auth-abas button {
+    flex: 1; padding: 10px; border: 0; border-radius: 9px; cursor: pointer; font: inherit; font-weight: 600;
+    background: transparent; color: var(--text-secondary);
+}
+.auth-abas button.ativa { background: var(--accent-color); color: var(--on-accent, #fff); }
+#auth-form label { display: block; font-weight: 600; margin-bottom: 12px; }
+#auth-form input {
+    display: block; width: 100%; margin-top: 6px; padding: 12px; font: inherit;
+    border: 2px solid var(--border-color); border-radius: 10px;
+    background: var(--bg-secondary); color: var(--text-primary);
+}
+#auth-form input:focus { outline: 3px solid var(--accent-color); outline-offset: 1px; }
+.auth-botao {
+    display: block; width: 100%; margin-top: 8px; padding: 13px; border: 0; border-radius: 12px; cursor: pointer;
+    font: inherit; font-weight: 700; background: var(--accent-color); color: var(--on-accent, #fff);
+}
+.auth-botao:hover { background: var(--accent-dark); }
+.auth-botao:disabled { opacity: .6; cursor: wait; }
+.auth-botao.auth-sair, .auth-botao.tutorial-sec { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); }
+.auth-link { display: block; margin: 10px auto 0; border: 0; background: none; color: var(--accent-dark); text-decoration: underline; cursor: pointer; font: inherit; }
+.auth-erro { margin: 4px 0 8px; padding: 10px 12px; border-radius: 10px; font-weight: 600; background: #fde8e8; color: #8a1c1c; }
+.auth-erro.ok { background: #e3f6e8; color: #17602b; }
+.auth-dica { margin: 14px 0 0; font-size: .9rem; color: var(--text-secondary); line-height: 1.5; }
+.auth-ola { margin: 0; font-size: 1.1rem; }
+
+/* ---- tutorial ---- */
+.tutorial-caixa { text-align: center; }
+.tutorial-caixa h2 { margin: 8px 0 10px; }
+.tutorial-emoji { font-size: 3.4rem; line-height: 1; }
+.tutorial-caixa p { color: var(--text-secondary); line-height: 1.6; }
+.tutorial-pontos { display: flex; justify-content: center; gap: 6px; margin: 16px 0; }
+.tutorial-pontos i { width: 9px; height: 9px; border-radius: 50%; background: var(--border-color); }
+.tutorial-pontos i.atual { background: var(--accent-color); transform: scale(1.3); }
+.tutorial-botoes { display: flex; gap: 10px; }
+.tutorial-botoes .auth-botao { margin-top: 0; }
+.tutorial-contador { margin: 12px 0 0; font-size: .85rem; }
+.tutorial-convite {
+    position: fixed; left: 16px; bottom: 16px; z-index: 9000; display: flex; align-items: center; gap: 10px;
+    background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);
+    border-radius: 16px; padding: 10px 12px; box-shadow: var(--shadow-lg);
+}
+.tutorial-convite button { border: 0; border-radius: 10px; padding: 8px 12px; cursor: pointer; font: inherit; font-weight: 600; background: var(--accent-color); color: var(--on-accent, #fff); }
+.tutorial-convite button#convite-fechar { background: transparent; color: var(--text-secondary); padding: 6px 8px; }
+
+/* ---- botões do painel Personalizar ---- */
+.btn-recurso {
+    display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 8px; padding: 10px 12px; cursor: pointer; text-align: left;
+    border: 2px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); color: var(--text-primary); font: inherit;
+}
+.btn-recurso-icone { font-size: 1.4rem; }
+.btn-recurso-texto { flex: 1; display: flex; flex-direction: column; }
+.btn-recurso-texto small { color: var(--text-secondary); }
+.btn-recurso-chave { width: 40px; height: 22px; border-radius: 11px; background: var(--border-color); position: relative; flex: none; }
+.btn-recurso-chave::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .2s; }
+.btn-recurso.ligado { border-color: var(--accent-color); }
+.btn-recurso.ligado .btn-recurso-chave { background: var(--accent-color); }
+.btn-recurso.ligado .btn-recurso-chave::after { left: 21px; }
+
+/* ---- fonte para dislexia e reduzir movimento ---- */
+body.fonte-dislexia, body.fonte-dislexia button, body.fonte-dislexia input, body.fonte-dislexia textarea {
+    font-family: "OpenDyslexic", "Lexend", "Comic Neue", "Comic Sans MS", sans-serif !important;
+    letter-spacing: .04em; word-spacing: .12em; line-height: 1.7;
+}
+body.reduzir-movimento *, body.reduzir-movimento *::before, body.reduzir-movimento *::after {
+    animation-duration: .001ms !important; animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important; scroll-behavior: auto !important;
+}
+body.reduzir-movimento .carousel-track { animation: none !important; }
+
+/* ---- avaliação ---- */
+.avaliacao-card { text-align: center; padding: 32px 24px; }
+.avaliacao-card .btn-tcc { display: inline-block; margin-top: 12px; text-decoration: none; }
+
+/* ---- painel do professor ---- */
+#professor-section { max-width: 1100px; margin: 0 auto; }
+.prof-topo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.prof-topo h2 { margin: 0; }
+.prof-botoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.prof-botoes button, .prof-acoes button, .prof-voltar {
+    padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer; font: inherit; font-weight: 600;
+    background: var(--bg-secondary); color: var(--text-primary);
+}
+.prof-acoes button.perigo { color: #b3261e; }
+.prof-voltar { margin-bottom: 12px; }
+.prof-cartoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 0 0 16px; }
+.prof-cartao { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; text-align: center; box-shadow: var(--shadow-sm); }
+.prof-cartao strong { display: block; font-size: 1.6rem; color: var(--accent-dark); }
+.prof-cartao span { color: var(--text-secondary); font-size: .9rem; }
+.prof-bloco { margin-bottom: 16px; }
+.prof-bloco h3 { margin-top: 0; }
+.prof-bloco textarea { width: 100%; padding: 12px; font: inherit; border: 2px solid var(--border-color); border-radius: 10px; background: var(--bg-secondary); color: var(--text-primary); resize: vertical; }
+.prof-ajuda { color: var(--text-secondary); line-height: 1.5; }
+.prof-tabela-box { overflow-x: auto; }
+.prof-tabela { width: 100%; border-collapse: collapse; }
+.prof-tabela th, .prof-tabela td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+.prof-tabela th { font-size: .85rem; color: var(--text-secondary); }
+.prof-tabela small { color: var(--text-secondary); }
+.prof-acoes { white-space: nowrap; }
+.prof-acoes button + button { margin-left: 6px; }
+.prof-tag { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: .8rem; font-weight: 700; border: 1px solid var(--border-color); }
+.prof-tag.ok { background: #e3f6e8; color: #17602b; }
+.prof-tag.pend { background: #fff3d6; color: #7a4b00; }
+.prof-tag.fora { background: var(--bg-secondary); color: var(--text-secondary); }
+.prof-faixa { font-weight: 700; }
+.prof-faixa.otimo { color: #17602b; } .prof-faixa.medio { color: #7a4b00; } .prof-faixa.baixo { color: #b3261e; }
+.prof-barra { display: inline-block; width: 90px; height: 10px; border-radius: 5px; background: var(--border-color); vertical-align: middle; overflow: hidden; }
+.prof-barra i { display: block; height: 100%; background: #2e9e57; }
+.prof-barra i.medio { background: #e0a100; } .prof-barra i.baixo { background: #d1453b; }
+
+@media (max-width: 760px) {
+    .prof-tabela thead { display: none; }
+    .prof-tabela:not(.prof-simples) tr { display: block; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px; padding: 6px 10px; }
+    .prof-tabela:not(.prof-simples) td { display: flex; justify-content: space-between; gap: 12px; border: 0; padding: 6px 0; }
+    .prof-tabela:not(.prof-simples) td::before { content: attr(data-rotulo); font-weight: 700; color: var(--text-secondary); }
+    .prof-tabela:not(.prof-simples) td.prof-acoes { flex-wrap: wrap; }
+}
+
+/* painel Personalizar ficou maior (novas opções de acessibilidade): rola dentro da tela */
+.personalizacao-menu { max-height: calc(100vh - 130px); overflow-y: auto; overscroll-behavior: contain; }
