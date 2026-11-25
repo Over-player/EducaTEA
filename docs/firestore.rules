@@ -2,22 +2,33 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // professor = e-mail cadastrado na coleção "professores" (só você cria, pelo console do Firebase)
-    function ehProfessor() {
+    // administrador = e-mail cadastrado na coleção "admins" (só você cria, pelo console do Firebase)
+    function ehAdmin() {
       return request.auth != null &&
-             exists(/databases/$(database)/documents/professores/$(request.auth.token.email));
+             exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
+    }
+
+    // professor = e-mail na coleção "professores" (o administrador libera pelo painel); o admin também vale
+    function ehProfessor() {
+      return ehAdmin() || (request.auth != null &&
+             exists(/databases/$(database)/documents/professores/$(request.auth.token.email)));
+    }
+
+    match /admins/{email} {
+      allow read: if request.auth != null && (request.auth.token.email == email || ehAdmin());
+      allow write: if false;
     }
 
     match /professores/{email} {
       allow read: if request.auth != null && (request.auth.token.email == email || ehProfessor());
-      allow write: if false;
+      allow write: if ehAdmin();
     }
 
     // cada aluno lê e grava só o próprio progresso; o professor lê todos
     match /alunos/{uid} {
       allow read: if request.auth != null && (request.auth.uid == uid || ehProfessor());
       allow create, update: if request.auth != null && request.auth.uid == uid;
-      allow delete: if ehProfessor();
+      allow delete: if ehAdmin();
     }
 
     // lista da turma: só o professor mexe; o aluno só enxerga a própria linha

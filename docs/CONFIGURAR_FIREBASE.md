@@ -24,19 +24,24 @@ Tudo abaixo é gratuito (plano Spark) e leva uns 15 minutos.
    (apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId) e envie ao GitHub.
    Esses valores podem ficar públicos: quem protege os dados são as regras do passo 3.
 
-## 5. Criar a conta do professor
-1. No site, clique em **Entrar → Criar conta** com o e-mail do professor.
-2. No Firebase: **Firestore Database → Iniciar coleção** → ID da coleção: `professores`.
-3. **ID do documento: o e-mail do professor, em minúsculas** (ex.: `mestre@escola.com`). Adicione um campo qualquer, como `nome` (string).
-4. Saia e entre de novo no site: aparece **Painel do Professor** no menu.
+## 5. Criar a conta de administrador (a sua)
+O administrador faz tudo o que o professor faz e ainda libera ou retira o acesso de professores, direto no site.
+1. No site, clique em **Entrar → Criar conta** com o seu e-mail.
+2. No Firebase: **Firestore Database → Iniciar coleção** → ID da coleção: `admins`.
+3. **ID do documento: o seu e-mail, em minúsculas** (ex.: `voce@email.com`). Adicione um campo qualquer, como `nome` (string) → **Salvar**.
+4. Saia e entre de novo no site: aparece **Administração** no menu.
 
-Para outro professor, repita o passo 5. Para tirar o acesso, apague o documento dele.
+Esse é o único passo feito no console. Daqui para frente, para liberar um professor:
+1. O professor cria a conta no site (Entrar → Criar conta).
+2. Você abre **Administração**, digita o e-mail dele em **Professores com acesso** e clica em **Liberar acesso**.
+3. Para tirar o acesso, clique em **Retirar acesso** ao lado do e-mail.
 
-## Como o professor usa
+## Como o professor e o administrador usam
 - **Adicionar alunos à turma:** um por linha, `Nome, e-mail`. Quem ainda não criou conta aparece como "Não cadastrado".
 - O aluno cria a conta com **o mesmo e-mail** e passa a aparecer como "Cadastrado", com pontos, conquistas e desempenho por jogo.
 - Quem criar conta e não estiver na lista aparece como "Fora da lista", com um botão para adicionar à turma.
 - **Baixar planilha (CSV)** abre direto no Excel.
+- Só o administrador vê o bloco **Professores com acesso** e o botão **Apagar dados deste aluno** (apaga o progresso na nuvem, não a conta de login).
 
 ## Observações importantes
 - O progresso é enviado quando o aluno joga (alguns segundos depois de cada resposta).

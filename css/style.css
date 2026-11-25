@@ -3369,3 +3369,12 @@ body.reduzir-movimento .carousel-track { animation: none !important; }
 
 /* painel Personalizar ficou maior (novas opções de acessibilidade): rola dentro da tela */
 .personalizacao-menu { max-height: calc(100vh - 130px); overflow-y: auto; overscroll-behavior: contain; }
+
+/* ---- administração ---- */
+.prof-lista { list-style: none; margin: 0 0 12px; padding: 0; }
+.prof-lista li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
+.prof-lista button { padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer; font: inherit; background: var(--bg-secondary); color: #b3261e; font-weight: 600; }
+.prof-linha { display: flex; flex-wrap: wrap; gap: 8px; }
+.prof-linha input { flex: 1 1 220px; padding: 12px; font: inherit; border: 2px solid var(--border-color); border-radius: 10px; background: var(--bg-secondary); color: var(--text-primary); }
+.prof-linha .auth-botao { width: auto; margin-top: 0; padding: 12px 18px; }
+.prof-voltar.perigo { color: #b3261e; margin-left: 8px; }

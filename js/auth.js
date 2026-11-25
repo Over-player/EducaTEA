@@ -6,8 +6,10 @@
      jogos) é salvo na nuvem e acompanha o aluno em qualquer computador.
      Entrar é opcional: sem conta o site funciona como sempre.
    • Professor: vê a turma, quem já se cadastrou e quem não, o progresso e o
-     desempenho de cada aluno. A conta de professor é liberada por você no
-     console do Firebase (veja docs/CONFIGURAR_FIREBASE.md).
+     desempenho de cada aluno.
+   • Administrador: faz tudo o que o professor faz e ainda libera/retira o
+     acesso de professores e apaga dados de alunos. A conta de administrador é
+     criada por você no console do Firebase (veja docs/CONFIGURAR_FIREBASE.md).
 
    ESTRUTURA DO ARQUIVO
    1. CONFIGURAÇÃO   – carrega o SDK do Firebase (só se firebase-config.js estiver preenchido)
@@ -30,10 +32,11 @@
 
     let auth = null, db = null;
     let usuario = null;          // usuário do Firebase
-    let papel = null;            // 'aluno' | 'professor' | null
+    let papel = null;            // 'aluno' | 'professor' | 'admin' | null
     let nomeNovo = '';           // nome digitado no cadastro (usado até o perfil existir)
     let temporizador = null;     // espera antes de enviar o progresso
-    let turma = [], contas = [], emailsProfessores = [];
+    let turma = [], contas = [], emailsProfessores = [], emailsAdmins = [];
+    const ehEquipe = () => papel === 'professor' || papel === 'admin';   // quem pode abrir o painel
 
     /* ------------------------------------------------------------ 1. CONFIGURAÇÃO */
     function configuracaoPreenchida() {
@@ -99,10 +102,15 @@
         usuario = user;
         const email = emailLimpo(user.email);
 
-        let ehProfessor = false;
-        try { ehProfessor = (await db.collection('professores').doc(email).get()).exists; } catch (e) { /* não é professor */ }
+        let ehAdmin = false, ehProfessor = false;
+        try { ehAdmin = (await db.collection('admins').doc(email).get()).exists; } catch (e) { /* não é administrador */ }
+        if (!ehAdmin) {
+            try { ehProfessor = (await db.collection('professores').doc(email).get()).exists; } catch (e) { /* não é professor */ }
+        }
 
-        if (ehProfessor) {
+        if (ehAdmin) {
+            papel = 'admin';
+        } else if (ehProfessor) {
             papel = 'professor';
         } else {
             papel = 'aluno';
@@ -223,11 +231,12 @@
     }
 
     function telaConta() {
-        const prof = papel === 'professor';
+        const prof = ehEquipe();
+        const rotulo = papel === 'admin' ? 'Administrador(a)' : prof ? 'Professor(a)' : 'Aluno(a)';
         return `
             <p class="auth-ola">Olá, <strong>${esc(usuario.displayName || primeiroNome(usuario.email))}</strong>!</p>
-            <p class="auth-dica">${esc(usuario.email)} · ${prof ? 'Professor(a)' : 'Aluno(a)'}</p>
-            ${prof ? '<button type="button" class="auth-botao" id="auth-painel">👩‍🏫 Abrir painel do professor</button>'
+            <p class="auth-dica">${esc(usuario.email)} · ${rotulo}</p>
+            ${prof ? `<button type="button" class="auth-botao" id="auth-painel">${papel === 'admin' ? '🛡️ Abrir painel de administração' : '👩‍🏫 Abrir painel do professor'}</button>`
                    : '<p class="auth-dica">✅ Seu progresso está sendo salvo na conta.</p>'}
             <button type="button" class="auth-botao auth-sair" id="auth-sair">Sair da conta</button>`;
     }
@@ -310,8 +319,8 @@
         botao.hidden = false;
         botao.textContent = usuario ? '👤 ' + primeiroNome(usuario.displayName || usuario.email) : '👤 Entrar';
         const nav = $('nav-professor');
-        if (nav) nav.hidden = papel !== 'professor';
-        if (papel !== 'professor' && $('professor-section')) $('professor-section').classList.remove('active');
+        if (nav) { nav.hidden = !ehEquipe(); nav.lastChild.textContent = papel === 'admin' ? ' Administração' : ' Painel do Professor'; }
+        if (!ehEquipe() && $('professor-section')) $('professor-section').classList.remove('active');
     }
 
     /* ------------------------------------------------------------------ 6. PAINEL */
@@ -366,15 +375,18 @@
     }
 
     async function carregarDadosPainel() {
-        const [t, a, p] = await Promise.all([
+        const [t, a, p, ad] = await Promise.all([
             db.collection('turma').get(),
             db.collection('alunos').get(),
-            db.collection('professores').get()
+            db.collection('professores').get(),
+            papel === 'admin' ? db.collection('admins').get() : Promise.resolve({ forEach() {} })
         ]);
         turma = []; t.forEach(d => turma.push({ email: d.id, ...d.data() }));
         contas = []; a.forEach(d => contas.push({ uid: d.id, ...d.data() }));
         emailsProfessores = []; p.forEach(d => emailsProfessores.push(d.id));
-        contas = contas.filter(c => !emailsProfessores.includes(emailLimpo(c.email)));
+        emailsAdmins = []; ad.forEach(d => emailsAdmins.push(d.id));
+        // professores e administradores não entram na lista de alunos
+        contas = contas.filter(c => !emailsProfessores.includes(emailLimpo(c.email)) && !emailsAdmins.includes(emailLimpo(c.email)));
     }
 
     // junta a lista da turma com as contas criadas
@@ -421,7 +433,7 @@
 
         return `
         <div class="prof-topo">
-            <h2>👩‍🏫 Painel do Professor</h2>
+            <h2>${papel === 'admin' ? '🛡️ Administração' : '👩‍🏫 Painel do Professor'}</h2>
             <div class="prof-botoes">
                 <button type="button" id="prof-atualizar">🔄 Atualizar</button>
                 <button type="button" id="prof-csv">⬇️ Baixar planilha (CSV)</button>
@@ -435,6 +447,8 @@
             ${cartao(media == null ? '—' : media + '%', 'média de acertos')}
             ${cartao(ativos, 'ativos nos últimos 7 dias')}
         </div>
+
+        ${papel === 'admin' ? htmlAdmin() : ''}
 
         <div class="card-base prof-bloco">
             <h3>➕ Adicionar alunos à turma</h3>
@@ -453,6 +467,45 @@
         </div>`;
     }
 
+    // só o administrador vê: libera ou retira o acesso de professores sem usar o console do Firebase
+    function htmlAdmin() {
+        const linhas = emailsProfessores.map(e => `<li><span>${esc(e)}</span>
+            <button type="button" class="perigo" data-tirarprof="${esc(e)}">Retirar acesso</button></li>`).join('');
+        return `
+        <div class="card-base prof-bloco prof-admin">
+            <h3>🛡️ Professores com acesso</h3>
+            <p class="prof-ajuda">Quem estiver aqui vê o painel da turma. A pessoa precisa ter uma conta criada no site com o mesmo e-mail.</p>
+            ${linhas ? `<ul class="prof-lista">${linhas}</ul>` : '<p class="prof-ajuda">Nenhum professor liberado ainda.</p>'}
+            <div class="prof-linha">
+                <input id="prof-novo-email" type="email" placeholder="e-mail do professor" aria-label="E-mail do professor">
+                <button type="button" class="auth-botao" id="prof-liberar">Liberar acesso</button>
+            </div>
+            <p class="auth-erro" id="prof-msg-adm" role="status" hidden></p>
+        </div>`;
+    }
+
+    async function liberarProfessor() {
+        const email = emailLimpo($('prof-novo-email').value);
+        const msg = $('prof-msg-adm');
+        if (!/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(email)) { msg.textContent = 'Digite um e-mail válido.'; msg.hidden = false; return; }
+        try {
+            await db.collection('professores').doc(email).set({ liberadoEm: new Date().toISOString(), liberadoPor: emailLimpo(usuario.email) });
+            await carregarDadosPainel(); desenharPainel();
+        } catch (e) { msg.textContent = traduzirErro(e); msg.hidden = false; }
+    }
+
+    async function retirarProfessor(email) {
+        if (!confirm('Retirar o acesso de ' + email + '? Ele(a) vira aluno(a) comum.')) return;
+        try { await db.collection('professores').doc(email).delete(); await carregarDadosPainel(); desenharPainel(); }
+        catch (e) { aviso(traduzirErro(e), false); }
+    }
+
+    async function apagarDadosAluno(uid, nome) {
+        if (!confirm('Apagar os dados e o progresso de ' + nome + ' da nuvem?\nA conta de login continua existindo, mas o progresso é perdido. Não dá para desfazer.')) return;
+        try { await db.collection('alunos').doc(uid).delete(); await carregarDadosPainel(); desenharPainel(); }
+        catch (e) { aviso(traduzirErro(e), false); }
+    }
+
     function htmlDetalhe(l) {
         const r = l.resumo, f = faixa(r.pct);
         const todos = nomesDosJogos();
@@ -467,6 +520,7 @@
         const a = r.areas;
         return `
             <button type="button" class="prof-voltar" id="prof-voltar">← Voltar para a turma</button>
+            ${papel === 'admin' ? `<button type="button" class="prof-voltar perigo" data-apagar="${esc(l.conta.uid)}" data-nome="${esc(l.nome)}">🗑️ Apagar dados deste aluno</button>` : ''}
             <h3>${esc(l.nome)}</h3>
             <p class="prof-ajuda">${esc(l.email)} · conta criada em ${dataBR(l.conta.criadoEm)}</p>
             <div class="prof-cartoes">
@@ -488,7 +542,7 @@
     }
 
     async function abrirPainel() {
-        if (papel !== 'professor') return;
+        if (!ehEquipe()) return;
         mostrarPagina('professor-section', 'nav-professor');
         const secao = $('professor-section');
         secao.innerHTML = '<p class="prof-ajuda">Carregando a turma…</p>';
@@ -558,6 +612,9 @@
             else if (b.dataset.ver) { const l = linhasDaTurma().find(x => x.email === b.dataset.ver); if (l && l.conta) $('professor-section').innerHTML = `<div class="card-base prof-bloco">${htmlDetalhe(l)}</div>`; }
             else if (b.dataset.tirar) tirarDaTurma(b.dataset.tirar);
             else if (b.dataset.por) colocarNaTurma(b.dataset.por);
+            else if (b.id === 'prof-liberar') liberarProfessor();
+            else if (b.dataset.tirarprof) retirarProfessor(b.dataset.tirarprof);
+            else if (b.dataset.apagar) apagarDadosAluno(b.dataset.apagar, b.dataset.nome);
         });
     }
 
