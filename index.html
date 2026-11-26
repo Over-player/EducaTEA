@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal EducaTEA | Inclusão Digital</title>
-    <link rel="stylesheet" href="css/style.css?v=20261129">
-    <link rel="stylesheet" href="css/jogos.css?v=20261129">
+    <link rel="stylesheet" href="css/style.css?v=20261130">
+    <link rel="stylesheet" href="css/jogos.css?v=20261130">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Comic+Neue:wght@400;700&amp;display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
@@ -457,17 +457,22 @@
 </div>
 
 
-<button id="btn-abrir-conquistas" class="btn-abrir-conquistas" onclick="toggleConquistasPanel()">🏆</button>
+<!-- BARRA DE BOTÕES FLUTUANTES: música, conquistas e temas (abrem no mesmo lugar, um de cada vez) -->
+<div class="dock" id="dock" role="toolbar" aria-label="Música, conquistas e temas">
+    <button type="button" id="dock-musica" class="dock-btn" onclick="toggleMusicPlayer()" aria-controls="music-player" aria-expanded="false" aria-label="Músicas" title="Músicas">🎵</button>
+    <button type="button" id="dock-conquistas" class="dock-btn" onclick="toggleConquistasPanel()" aria-controls="conquistas-player" aria-expanded="false" aria-label="Conquistas" title="Conquistas">🏆</button>
+    <button type="button" id="dock-temas" class="dock-btn" onclick="togglePersonalizacao()" aria-controls="personalizacao-menu" aria-expanded="false" aria-label="Personalizar o site" title="Personalizar">🎨</button>
+</div>
 
 
-<script src="js/script.js?v=20261129"></script>
-<script src="js/tcc.js?v=20261129"></script>
-<script src="js/recursos.js?v=20261129"></script>
-<script src="js/firebase-config.js?v=20261129"></script>
-<script src="js/auth.js?v=20261129"></script>
-<script src="js/jogos/jogos-base.js?v=20261129"></script>
-<script src="js/jogos/jogos-dados.js?v=20261129"></script>
-<script src="js/jogos/jogos.js?v=20261129"></script>
+<script src="js/script.js?v=20261130"></script>
+<script src="js/tcc.js?v=20261130"></script>
+<script src="js/recursos.js?v=20261130"></script>
+<script src="js/firebase-config.js?v=20261130"></script>
+<script src="js/auth.js?v=20261130"></script>
+<script src="js/jogos/jogos-base.js?v=20261130"></script>
+<script src="js/jogos/jogos-dados.js?v=20261130"></script>
+<script src="js/jogos/jogos.js?v=20261130"></script>
 </body>
 </html>
 

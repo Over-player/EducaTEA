@@ -1365,8 +1365,51 @@ function toggleConquistasPanel(event) {
     if (event) event.stopPropagation();
     renderConquistas();
     const painel = document.getElementById('conquistas-player');
-    if (painel) painel.classList.toggle('collapsed');
+    if (painel) {
+        if (painel.classList.contains('collapsed')) fecharPaineis('conquistas');   // abre este e fecha os outros
+        painel.classList.toggle('collapsed');
+    }
+    atualizarDock();
 }
+
+// ================= BARRA DE BOTÕES FLUTUANTES (música, conquistas e temas) =================
+// Os três painéis abrem no mesmo lugar, acima da barra, e só um fica aberto por vez.
+// Assim um nunca cobre o outro.
+function fecharPaineis(exceto) {
+    const musica = document.getElementById('music-player');
+    const conq = document.getElementById('conquistas-player');
+    const temas = document.getElementById('personalizacao-menu');
+    const dalt = document.getElementById('daltonismo-menu');
+    if (exceto !== 'musica' && musica) musica.classList.add('collapsed');
+    if (exceto !== 'conquistas' && conq) conq.classList.add('collapsed');
+    if (exceto !== 'temas') {
+        if (temas) temas.classList.remove('active');
+        if (dalt) dalt.classList.remove('active');
+    }
+    atualizarDock();
+}
+
+function atualizarDock() {
+    const aberto = {
+        musica: !document.getElementById('music-player').classList.contains('collapsed'),
+        conquistas: !document.getElementById('conquistas-player').classList.contains('collapsed'),
+        temas: document.getElementById('personalizacao-menu').classList.contains('active') ||
+               document.getElementById('daltonismo-menu').classList.contains('active')
+    };
+    Object.keys(aberto).forEach(k => {
+        const b = document.getElementById('dock-' + k);
+        if (!b) return;
+        b.classList.toggle('ativo', aberto[k]);
+        b.setAttribute('aria-expanded', String(aberto[k]));
+    });
+}
+
+// clicar fora dos painéis ou apertar Esc fecha tudo
+document.addEventListener('click', e => {
+    if (e.target.closest('#dock, #music-player, #conquistas-player, #personalizacao-menu, #daltonismo-menu')) return;
+    fecharPaineis();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharPaineis(); });
 
 let somAtivo = true;
 let audioContext = null;
@@ -1482,8 +1525,10 @@ function togglePersonalizacao() {
         menu.classList.remove('active');
         if (dalt) dalt.classList.remove('active');
     } else {
+        fecharPaineis('temas');
         menu.classList.add('active');
     }
+    atualizarDock();
 }
 // Abre o painel de temas para daltônicos no lugar do painel de temas (mesmo tamanho)
 function abrirTemasDaltonismo() {
@@ -1868,7 +1913,11 @@ function setLocalVolume(value) {
 function toggleMusicPlayer(event) {
     if (event) event.stopPropagation();
     const player = document.getElementById('music-player');
-    if (player) player.classList.toggle('collapsed');
+    if (player) {
+        if (player.classList.contains('collapsed')) fecharPaineis('musica');
+        player.classList.toggle('collapsed');
+    }
+    atualizarDock();
 }
 
 // ================= CARROSSEL =================

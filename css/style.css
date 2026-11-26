@@ -3396,3 +3396,76 @@ body.reduzir-movimento .carousel-track { animation: none !important; }
     /* em celular o selo "Portal de Acessibilidade" sai do cabeçalho para o botão Entrar caber sem quebrar o logo */
     .top-nav .status-container { display: none; }
 }
+
+
+/* =============================================================================
+   BARRA DE BOTÕES FLUTUANTES (música 🎵, conquistas 🏆 e temas 🎨)
+   Fica por último de propósito: substitui os posicionamentos antigos desses três
+   painéis. Os três abrem no mesmo lugar (acima da barra) e só um por vez, então
+   nunca se cobrem.
+   ============================================================================= */
+.dock {
+    position: fixed; right: 16px; bottom: 16px; z-index: 1600;
+    display: flex; gap: 10px;
+}
+.dock-btn {
+    width: 54px; height: 54px; border-radius: 50%; cursor: pointer; font-size: 1.5rem; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-card); color: var(--text-primary);
+    border: 2px solid var(--border-color); box-shadow: var(--shadow-lg);
+    transition: transform .2s, border-color .2s, background .2s;
+}
+.dock-btn:hover { transform: translateY(-3px); border-color: var(--accent-color); }
+.dock-btn.ativo { background: var(--accent-color); border-color: var(--accent-color); transform: translateY(-3px); }
+.dock-btn:focus-visible { outline: 3px solid var(--accent-color); outline-offset: 3px; }
+
+/* botões antigos que a barra substitui */
+html body .btn-personalizar, html body .btn-abrir-conquistas { display: none !important; }
+html body .personalizacao-panel { position: static !important; }
+
+/* os três painéis: mesmo lugar, acima da barra */
+html body .music-player,
+html body .conquistas-flutuante,
+html body #personalizacao-menu,
+html body #daltonismo-menu {
+    position: fixed !important;
+    top: auto !important; left: auto !important;
+    right: 16px !important; bottom: 88px !important;
+    width: 340px !important; max-width: calc(100vw - 32px) !important;
+    height: auto !important;
+    max-height: calc(100vh - 200px) !important;
+    overflow-y: auto !important; overscroll-behavior: contain;
+    z-index: 1590 !important;
+    transform: none !important; margin: 0 !important;
+}
+html body .music-player.collapsed,
+html body .conquistas-flutuante.collapsed { display: none !important; }
+html body #personalizacao-menu:not(.active),
+html body #daltonismo-menu:not(.active) { display: none !important; }
+html body #personalizacao-menu.active,
+html body #daltonismo-menu.active { display: block !important; }
+html body .music-player .music-player-content,
+html body .conquistas-flutuante .music-player-content { max-height: none !important; overflow: visible !important; }
+
+/* celular: os painéis ocupam a largura da tela, acima da barra */
+@media (max-width: 768px) {
+    .dock { right: 50%; transform: translateX(50%); bottom: 12px; }
+    html body .music-player,
+    html body .conquistas-flutuante,
+    html body #personalizacao-menu,
+    html body #daltonismo-menu {
+        left: 10px !important; right: 10px !important;
+        width: auto !important; max-width: none !important;
+        bottom: 80px !important; max-height: calc(100vh - 180px) !important;
+    }
+}
+
+/* para o último conteúdo da página não ficar escondido atrás da barra */
+.main-content { padding-bottom: 90px; }
+
+/* convite do tutorial: acima da barra de botões no celular */
+@media (max-width: 768px) {
+    .tutorial-convite { left: 10px; right: 10px; bottom: 80px; justify-content: space-between; }
+}
+/* o convite do tutorial some quando algum painel da barra está aberto (para não cobrir) */
+body:has(.dock-btn.ativo) .tutorial-convite { display: none; }
