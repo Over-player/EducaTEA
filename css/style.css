@@ -3461,7 +3461,7 @@ html body .conquistas-flutuante .music-player-content { max-height: none !import
 }
 
 /* para o último conteúdo da página não ficar escondido atrás da barra */
-.main-content { padding-bottom: 90px; }
+.main-content { padding-bottom: 90px; }   /* celular: a barra fica embaixo */
 
 /* convite do tutorial: acima da barra de botões no celular */
 @media (max-width: 768px) {
@@ -3469,3 +3469,17 @@ html body .conquistas-flutuante .music-player-content { max-height: none !import
 }
 /* o convite do tutorial some quando algum painel da barra está aberto (para não cobrir) */
 body:has(.dock-btn.ativo) .tutorial-convite { display: none; }
+
+/* computador: a barra vai para a lateral direita (vertical), sempre à vista, e os painéis abrem ao lado dela */
+@media (min-width: 769px) {
+    .dock { right: 14px; bottom: auto; top: 50%; transform: translateY(-50%); flex-direction: column; }
+    html body .music-player,
+    html body .conquistas-flutuante,
+    html body #personalizacao-menu,
+    html body #daltonismo-menu {
+        right: 84px !important; bottom: auto !important; top: 110px !important;
+        max-height: calc(100vh - 140px) !important;
+    }
+    .main-content { padding-right: 90px; padding-bottom: 1rem; }
+    .tutorial-convite { bottom: 16px; }
+}
