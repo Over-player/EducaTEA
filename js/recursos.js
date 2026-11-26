@@ -12,7 +12,7 @@
 (function () {
     'use strict';
 
-    const FORMULARIO_URL = '';   // cole aqui o link do Google Forms (ex.: 'https://forms.gle/xxxx')
+    const FORMULARIO_URL = 'https://forms.gle/rtBAWWGB1gZHkrEY7';   // cole aqui o link do Google Forms (ex.: 'https://forms.gle/xxxx')
 
     const CHAVE = 'educatea_recursos';
     const $ = id => document.getElementById(id);
