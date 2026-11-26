@@ -3378,3 +3378,21 @@ body.reduzir-movimento .carousel-track { animation: none !important; }
 .prof-linha input { flex: 1 1 220px; padding: 12px; font: inherit; border: 2px solid var(--border-color); border-radius: 10px; background: var(--bg-secondary); color: var(--text-primary); }
 .prof-linha .auth-botao { width: auto; margin-top: 0; padding: 12px 18px; }
 .prof-voltar.perigo { color: #b3261e; margin-left: 8px; }
+
+/* botão de conta ao lado do "Portal de Acessibilidade" (cabeçalho) */
+.top-nav { display: flex; align-items: center; gap: 10px; }
+.btn-conta-topo {
+    padding: 9px 18px; border-radius: 100px; cursor: pointer; font: inherit; font-size: .85rem; font-weight: 700; white-space: nowrap;
+    background: var(--accent-color); color: var(--on-accent, #fff); border: 1px solid var(--accent-color);
+    transition: transform .2s, background .2s;
+}
+.btn-conta-topo:hover { background: var(--accent-dark); transform: scale(1.03); }
+@media (max-width: 600px) {
+    .top-nav { gap: 6px; }
+    .btn-conta-topo { padding: 5px 10px; font-size: .72rem; }
+    .top-nav .status-icon { display: none; }
+}
+@media (max-width: 520px) {
+    /* em celular o selo "Portal de Acessibilidade" sai do cabeçalho para o botão Entrar caber sem quebrar o logo */
+    .top-nav .status-container { display: none; }
+}
